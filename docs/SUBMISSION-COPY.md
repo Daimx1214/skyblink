@@ -8,8 +8,9 @@ sky and watch it change over time in real NASA SPHEREx survey images — like a
 little video of the sky. It lines up SPHEREx observations of the same field taken
 months apart (Data Release 1 + Quick Release 3, one uniformly processed set),
 aligns them on a shared north-up grid with one shared brightness stretch, and
-blinks them: moving objects jump, variable stars pulse, and false candidates fail
-our named Two-Epoch Check. The five test targets named in the challenge —
+blinks them: moving objects jump, variable stars pulse, and false candidates are
+screened out by our named Two-Epoch Check — a vetting method, documented in the
+project and applied in its validation. The five test targets named in the challenge —
 Barnard's Star, Epsilon Indi B, WISE 0855, RW Aurigae and R Draconis — are
 pre-loaded with per-target dossier pages: a blink explorer with Blink /
 Side-by-side / Difference modes, an ESA Gaia DR3 overlay proper-motion propagated
@@ -21,14 +22,14 @@ comes from that frame's own spectral WCS at the star's pixel, its flux from
 aperture photometry on the archive data. Guided Case Files follow interstellar comet 3I/ATLAS between its August
 and December 2025 visits, document the Two-Epoch Check, and present a measured
 proper-motion case: Barnard's Star centroided in all five epochs agrees with
-Gaia's prediction to within 1.3–7.1 arcsec (0.4–2.3 rendered pixels), with the scatter's likeliest confound stated
+Gaia's prediction to within 1.3–7.4 arcsec (0.4–2.4 rendered pixels), with the scatter's likeliest confound stated
 honestly. Every view carries its coordinates in the URL for sharing and
 embedding, and the site ships in dark and light themes. A 35-second guided tour
 walks a first-time visitor through a complete hunt. The method is validated, not
 just described: 540 synthetic movers injected into real epoch pairs were
 recovered at 100% (≥15σ; 97–98% at 8σ for shifts ≥2 px), and a control run on
 uninjected pairs counts 439 raw ≥6σ residual peaks — the measured reason a
-candidate must still pass the Two-Epoch Check. The explorer is fully
+candidate must still be vetted by the Two-Epoch Check. The explorer is fully
 keyboard-operable, its difference palette is colour-blind-safe, and it runs on
 phones with no account and no tracking.
 

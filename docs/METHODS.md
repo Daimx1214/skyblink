@@ -16,9 +16,12 @@ A candidate moving/changing object is accepted only if it passes all three tests
 
 ## Pipeline decisions (and why)
 
-- **Epochs from query metadata.** Observation dates and grouping come from the
-  SIA result (`t_min`), grouped into clusters separated by >20 days. The FITS
-  `DATE` header is the *processing* date and is never used for epoch labels.
+- **Epochs and dates.** Epoch *grouping* starts from the SIA result (`t_min`),
+  clustered by >20 days, but every frame's published date is that exposure's
+  own FITS `DATE-OBS`, read from the file actually rendered. (`t_min` alone
+  mislabelled 17 of 21 frames in an earlier build — the cluster's first row is
+  not necessarily the rendered exposure.) The FITS `DATE` header is the
+  *processing* date and is never used.
 - **Frame choice per epoch.** SIA returns every frame whose footprint intersects
   the search circle; SPHEREx's six detectors have offset footprints, so the
   frame that contains the target is chosen by minimum centre distance
