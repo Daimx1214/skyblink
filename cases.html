@@ -119,9 +119,9 @@
 
 <script>
   document.getElementById("btn-csv").addEventListener("click", () => {
-    const rows = [["observed", "release", "detector", "offset_from_gaia_arcsec"]];
+    const rows = [["observed", "release", "detector", "centre_distance_deg", "offset_from_gaia_arcsec"]];
     document.querySelectorAll("#measure-table tbody tr").forEach(tr => {
-      rows.push([...tr.children].map(td => td.textContent.trim().replace("″", "").replace("·", "-")));
+      rows.push([...tr.children].map(td => td.textContent.trim().replace("″", "").replace("°", "").replace("·", "-")));
     });
     const blob = new Blob([rows.map(r => r.join(",")).join("\n")], { type: "text/csv" });
     const a = document.createElement("a");
