@@ -16,16 +16,32 @@ Built by **Team Sohan Halwa** (Daim Ali & Ali Abdullah) for the
 
 ## What it does
 
+Six pages, one job: show how the sky changes.
+
 - **Coordinate / name search** — the challenge's stated objective: users enter a
   patch of sky (RA/Dec or an object name resolved via SIMBAD) and get a blink series.
-- **Blink player** — aligned epochs flip in place; play/pause, step, timeline, speed.
-- **Modes** — Blink · Side-by-side · Difference (later − earlier).
+- **Blink player** — aligned, north-up epochs flip in place; play/pause, step,
+  timeline, speed. **Modes** — Blink · Side-by-side · Difference (later − earlier).
 - **Five official test targets pre-loaded** — Barnard's Star, WISE 0855,
   Epsilon Indi B, RW Aurigae, R Draconis, each with its honest display recipe.
-- **Case Files** — guided investigations, led by Case 1: interstellar comet
-  **3I/ATLAS** in August vs December 2025.
+- **Dossier page per target** — blink explorer plus facts, an **ESA Gaia DR3
+  overlay** (positions proper-motion propagated to each frame's epoch), per-frame
+  **data quality** (clean-pixel % from the SPHEREx FLAGS plane) and **wavelength
+  band**, a **detector band-flux chart**, and the field inside the SPHEREx
+  all-sky cube via **Aladin Lite**.
+- **Shareable views** — every target lives at its own URL (`target.html?t=…`);
+  a Share link button copies the current view.
+- **Case Files** — guided investigations: interstellar comet **3I/ATLAS** between
+  its August and December 2025 visits; the **Two-Epoch Check** candidate-vetting
+  method; and a **measured proper-motion case** — Barnard's Star centroided in
+  all five epochs against Gaia's prediction (agreement ~1–2 px, with the
+  cross-detector scatter stated).
+- **Methods & Data pages** — the full pipeline, two pipeline mistakes we caught
+  and fixed (a south-up rendering bug; a 4.4′ stale target centre), the stated
+  limits, and a table of all eight challenge resources with how each was used.
 - **Provenance everywhere** — every frame shows its release (DR1/QR3), observation
   date (from archive metadata, not file headers), detector and observation ID.
+- **Dark & light themes**, responsive down to phones, no accounts, no tracking.
 
 ## How it works
 
