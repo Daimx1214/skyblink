@@ -239,6 +239,17 @@ $("#btn-prev").addEventListener("click", () => { stopPlay(); if (state.manifest)
 $("#btn-next").addEventListener("click", () => { stopPlay(); if (state.manifest) showFrame(state.idx + 1); });
 $("#search-form").addEventListener("submit", (e) => { e.preventDefault(); handleSearch($("#search-input").value); });
 
+// Light / dark theme (default dark; the star stage stays black in both)
+const themeBtn = $("#theme-btn");
+function paintThemeBtn() { themeBtn.textContent = document.documentElement.dataset.theme === "light" ? "🌙" : "☀️"; }
+themeBtn.addEventListener("click", () => {
+  const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("skyblink-theme", next); } catch (e) {}
+  paintThemeBtn();
+});
+paintThemeBtn();
+
 if (API) $("#foot-status").textContent = "live backend connected";
 buildCards();
 loadTarget("barnards-star", false);
