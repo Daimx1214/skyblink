@@ -45,6 +45,14 @@ tutorial notebooks — see `docs/METHODS.md`):
 - Wavelength in SPHEREx is per-pixel (spectral WCS); there is no `PIXSOLID`
   keyword — pixel solid angle is a separate calibration product.
 
+## Demo & source
+
+- **Demo video (27 s):** `skyblink-demo.mp4` in this repo.
+- **Full source:** `skyblink-source.zip` in this repo — the data pipeline
+  (`scripts/`), the API service (`services/`), methods and submission docs
+  (`docs/`) and the target list (`data/targets.yaml`). The website itself
+  (index.html, style.css, app.js, cache-data.js) lives at the repo root.
+
 ## Run it
 
 Static site (targets + case files work with zero backend):
