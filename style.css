@@ -21,8 +21,8 @@ h1,h2,h3{font-family:"Space Grotesk",Inter,sans-serif;line-height:1.15}
   background:radial-gradient(circle at 35% 35%,var(--teal),var(--violet) 70%);
   box-shadow:0 0 14px rgba(45,212,191,.55);animation:pulse 2.6s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
-.search{flex:1;display:flex;max-width:560px;margin:0 auto}
-.search input{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--star);
+.search{flex:1;display:flex;max-width:560px;margin:0 auto;min-width:0}
+.search input{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);color:var(--star);
   border-radius:10px 0 0 10px;padding:9px 12px;font-size:14px;outline:none}
 .search input:focus{border-color:var(--teal)}
 .search .go{background:var(--teal);color:#04241E;border:0;font-weight:700;
