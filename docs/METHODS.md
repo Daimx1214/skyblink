@@ -1,0 +1,46 @@
+# SkyBlink methods — the Two-Epoch Check
+
+## The named method
+
+A candidate moving/changing object is accepted only if it passes all three tests:
+
+1. **Both epochs.** The candidate appears in at least two independent epochs,
+   shifted or changed consistently (a single-epoch flash is a cosmic ray or a
+   transient artefact until proven otherwise).
+2. **Not a known star.** The new position is checked against the Gaia catalogue
+   (positions propagated from Gaia's 2016.0 epoch to the observation epoch using
+   Gaia proper motions — skipping this step misplaces Barnard's Star by ~100″).
+3. **Survives the difference view.** In the later-minus-earlier difference image,
+   a real mover leaves a clean positive/negative dipole; ghosts, crosstalk and
+   persistence artefacts do not behave consistently.
+
+## Pipeline decisions (and why)
+
+- **Epochs from query metadata.** Observation dates and grouping come from the
+  SIA result (`t_min`), grouped into clusters separated by >20 days. The FITS
+  `DATE` header is the *processing* date and is never used for epoch labels.
+- **Frame choice per epoch.** SIA returns every frame whose footprint intersects
+  the search circle; SPHEREx's six detectors have offset footprints, so the
+  frame that contains the target is chosen by minimum centre distance
+  (≤1.2°), and its true detector is recorded in the manifest.
+- **One grid, one stretch.** All frames of a target are reprojected
+  (`reproject`) onto a single north-up TAN grid at 3.1″/px and rendered with a
+  single global percentile + asinh stretch, so blinking shows sky change, not
+  scaling change.
+- **Cutouts.** Server-side cutouts via IRSA's IBE service
+  (`?center={ra},{dec}d&size={deg}` appended to the file URI, per IRSA's own
+  tutorial notebooks), with patient retries — the service throttles with
+  503 "Server busy" under load.
+- **Releases.** DR1 (reprocessed surveys 1–2) and QR3 (surveys 3–4) form one
+  uniformly processed set and are the only releases mixed in a blink set.
+  QR2 is superseded and excluded — except the official 3I/ATLAS observation
+  table, which is QR2-based and labelled as such wherever used.
+
+## Known limits (stated, not hidden)
+
+- Quick-look photometry/spectra are per-survey-image estimates (resolution
+  R≈40–130); publication-grade work needs the separate Spectral WCS and
+  Solid Angle Pixel Map calibration products.
+- 3I/ATLAS is a low-SNR, extended source in SPHEREx data; the case file says so.
+- Barnard's Star moves ~1–2 SPHEREx pixels per year; Case 3 treats it as a
+  measurement exercise with uncertainties, not a visual jump.
