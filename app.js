@@ -484,6 +484,7 @@ if (HAS_EXPLORER) {
   if (shareBtn) shareBtn.addEventListener("click", async () => {
     const u = new URL(location.href);
     u.searchParams.set("t", state.target.slug);
+    history.replaceState(null, "", u.toString());
     try { await navigator.clipboard.writeText(u.toString()); shareBtn.textContent = "Link copied ✓"; }
     catch (e) { shareBtn.textContent = u.toString(); }
     setTimeout(() => { shareBtn.textContent = "Share link"; }, 2200);
