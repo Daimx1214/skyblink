@@ -1,25 +1,29 @@
 # SkyBlink
 
-**Watch the sky change.** SkyBlink is a public web tool that lets anyone enter the
-coordinates of a patch of sky and watch it change over time in real NASA **SPHEREx**
-survey images — like a little video of the sky. Moving objects jump, variable stars
-pulse, and artefacts fail our **Two-Epoch Check**.
+**Watch the sky change.** SkyBlink is a public web tool that shows how a patch of
+sky changes over time in real NASA **SPHEREx** survey images — like a little video
+of the sky. Moving objects jump, variable stars pulse, and artefacts fail our
+**Two-Epoch Check**. The deployed site pre-loads the five official test targets;
+the same pipeline in this repo renders any coordinates locally or via its API
+service.
 
 Built by **Team Sohan Halwa** (Daim Ali & Ali Abdullah) for the
 **NASA Space Apps Challenge 2026**, challenge *Planet X and SPHEREx*.
 
 ## Live
 
-- Web app: *(deployed URL — see the Space Apps project page)*
-- The five official test targets and the hero case are pre-rendered into
-  `apps/web/cache/`, so the demo works even with the backend asleep.
+- Web app: https://daimx1214.github.io/skyblink/
+- Static build: the five official test targets and the 3I/ATLAS case are
+  pre-rendered (frame images embedded in `cache-data.js`), so the demo works
+  without any backend or live IRSA query.
 
 ## What it does
 
 Six pages, one job: show how the sky changes.
 
-- **Coordinate / name search** — the challenge's stated objective: users enter a
+- **Coordinate / name search (backend)** — the challenge's stated objective: enter a
   patch of sky (RA/Dec or an object name resolved via SIMBAD) and get a blink series.
+  Runs on the API service in `services/`; the deployed static site pre-loads the targets.
 - **Blink player** — aligned, north-up epochs flip in place; play/pause, step,
   timeline, speed. **Modes** — Blink · Side-by-side · Difference (later − earlier).
 - **Five official test targets pre-loaded** — Barnard's Star, WISE 0855,
@@ -34,8 +38,8 @@ Six pages, one job: show how the sky changes.
 - **Case Files** — guided investigations: interstellar comet **3I/ATLAS** between
   its August and December 2025 visits; the **Two-Epoch Check** candidate-vetting
   method; and a **measured proper-motion case** — Barnard's Star centroided in
-  all five epochs against Gaia's prediction (agreement ~1–2 px, with the
-  cross-detector scatter stated).
+  all five epochs against Gaia's prediction (offsets 1.3–7.1″, i.e. 0.4–2.3
+  rendered pixels, with the scatter's likeliest confound stated).
 - **Methods & Data pages** — the full pipeline, two pipeline mistakes we caught
   and fixed (a south-up rendering bug; a 4.4′ stale target centre), the stated
   limits, and a table of all eight challenge resources with how each was used.
@@ -63,18 +67,18 @@ tutorial notebooks — see `docs/METHODS.md`):
 
 ## Demo & source
 
-- **Demo video (27 s):** `skyblink-demo.mp4` in this repo.
-- **Full source:** `skyblink-source.zip` in this repo — the data pipeline
-  (`scripts/`), the API service (`services/`), methods and submission docs
-  (`docs/`) and the target list (`data/targets.yaml`). The website itself
+- **Demo video (29 s):** `skyblink-demo.mp4` in this repo.
+- **Full source:** the pipeline (`scripts/`), API service (`services/`), docs
+  (`docs/`) and target list (`data/targets.yaml`) are browsable in this repo;
+  `skyblink-source.zip` bundles the same tree as one archive. The website itself
   (index.html, style.css, app.js, cache-data.js) lives at the repo root.
 
 ## Run it
 
-Static site (targets + case files work with zero backend):
+Static site (targets + case files work with zero backend), from the repo root:
 
 ```bash
-cd apps/web && python3 -m http.server 8000
+python3 -m http.server 8000
 ```
 
 Live backend (any coordinates):
@@ -89,14 +93,26 @@ Regenerate the pre-rendered targets:
 
 ```bash
 .venv/bin/python scripts/precache_all.py     # the four remaining targets
-.venv/bin/python scripts/pipeline.py 269.4521 4.6934 5 apps/web/cache/barnards-star
+.venv/bin/python scripts/pipeline.py 269.4464 4.7671 5 cache/barnards-star
 .venv/bin/python scripts/comet_case.py       # Case 1: 3I/ATLAS
 ```
+
+## Limits
+
+- Frames from different SPHEREx detectors are different wavelength bands.
+  Cross-band blinks show colour change as well as motion; same-band pairs are
+  isolable in the viewer ("Same band only").
+- Frames show the archive IMAGE plane as delivered: zodiacal light is not
+  subtracted and flagged pixels are not masked; the "Clean pixels" figure
+  reports the unflagged share (FLAGS 0, or the SOURCE bit alone).
+- Injection tests use idealised Gaussians and our own detection rule; they
+  measure the difference test's sensitivity, not performance on real movers.
 
 ## Data & credits
 
 SPHEREx Level-2 images and archive services: **IRSA at IPAC (NASA/JPL-Caltech and
-the SPHEREx team)** — releases DR1 (DOI 10.26131/IRSA662 family) and QR3; the
+the SPHEREx team)** — DR1 Spectral Images (doi:10.26131/IRSA678), DR1 Spectral
+All-Sky Cube (doi:10.26131/IRSA679), QR3 (doi:10.26131/IRSA662); the
 3I/ATLAS observation table (QR2 processing) from IRSA's comet page. Reference
 positions/proper motions: **ESA Gaia (DPAC)**. Name resolution: **SIMBAD (CDS)**.
 Solar-system positions: **SkyBoT (IMCCE)**. This project is not affiliated with

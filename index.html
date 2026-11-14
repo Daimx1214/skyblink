@@ -119,7 +119,10 @@
         <dl class="mono" id="frame-info"></dl>
         <p class="fineprint">Dates are observation dates from the archive query
         (not file processing dates). All frames of a target share one grid and
-        one brightness stretch, so blinking shows the sky changing — not the scaling.</p>
+        one brightness stretch, so blinking shows the sky changing — not the scaling.
+        Each SPHEREx detector sees a different wavelength band, though, so a frame can
+        also change brightness because of colour; every frame's band is labelled, and
+        “Same band only” compares like with like.</p>
       </div>
       <div class="insp-card">
         <h3>Data freshness</h3>
@@ -160,7 +163,8 @@
         <div class="case-tag">CASE 3</div>
         <h3>The Star That Barely Moves</h3>
         <p>Barnard's Star has the largest proper motion of any star — and at SPHEREx's
-        6.2-arcsecond pixels even it shifts by only a pixel or two per year. Case 3 is the
+        native 6.15-arcsecond pixels even it shifts by only ~1.7 pixels per year
+        (~3.4 of our 3.1″ rendered pixels). Case 3 is the
         honest measurement case: centroid the star in each epoch and compare with Gaia's
         prediction, error bars included.</p>
       </article>

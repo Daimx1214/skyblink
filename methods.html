@@ -49,7 +49,7 @@
   <section class="panel-section">
     <h2>The pipeline</h2>
     <ol class="steps">
-      <li><b>Discover.</b> IRSA's SIA service is queried for every SPHEREx observation intersecting the field, restricted to the current uniform releases: DR1 and QR3 (collections <span class="mono">spherex_dr1, spherex_dr1_deep, spherex_qr3, spherex_qr3_deep</span>). The superseded QR2 processing is never mixed in.</li>
+      <li><b>Discover.</b> IRSA's SIA service is queried for every SPHEREx observation intersecting the field, restricted to the current uniform releases: DR1 and QR3 (collections <span class="mono">spherex_dr1, spherex_dr1_deep, spherex_qr3, spherex_qr3_deep</span>). Images are DR1/QR3 only; the one QR2-era item anywhere in the project is IRSA's published 3I/ATLAS position table, used for the comet's coordinates in Case 1.</li>
       <li><b>Cluster &amp; choose.</b> Observations are clustered into epochs (gaps over 20 days). The archive returns frames whose footprints merely <i>intersect</i> the search circle, so for each epoch we keep the frame whose centre is closest to the target — across <i>all six detectors</i>, because the detectors image offset strips of sky and forcing one detector loses whole epochs.</li>
       <li><b>Cut out.</b> Each chosen exposure is fetched as an archive cutout centred on the target, following the IRSA tutorial notebooks' recipe.</li>
       <li><b>Align.</b> Cutouts are reprojected (Astropy + reproject) onto one shared north-up tangent-plane grid at 3.1″/pixel for the target.</li>
@@ -102,6 +102,10 @@
       That number is why the Two-Epoch Check exists: a difference peak is a candidate, never a
       discovery. (Reproduce it: <span class="mono">scripts/validate.py</span> in the source archive.)</li>
     </ol>
+    <p>One limit, stated plainly: the injected sources are idealised Gaussians placed on real
+    frames and tested with our own detection rule. This measures the sensitivity of the
+    difference test, not performance on real moving objects, whose shapes and trails are
+    messier.</p>
   </section>
 
   <section class="panel-section">
@@ -111,7 +115,8 @@
       <li>Barnard's Star saturates its core in SPHEREx exposures; centroiding uses the unsaturated wings, which is why Case 3 quotes arcsecond-level tolerances.</li>
       <li>Band fluxes on the dossier charts are aperture sums on rendered frames — indicative. The Barnard's Star spectrum on its dossier page is the calibrated route: per-exposure wavelengths from each frame's spectral WCS with aperture photometry on the Level-2 data (27 channels, 0.84–4.79 µm).</li>
       <li>The pre-loaded site covers the five official targets plus the 3I/ATLAS case; arbitrary-coordinate rendering runs on the same pipeline in the project repository's API service.</li>
-      <li><b>Colour vs motion (band mixing).</b> Epochs are imaged by whichever detector's strip covers the target, and the six detectors are six different wavelength bands — so a source can brighten or fade between epochs purely because the <i>band</i> changed, with no motion at all. That is why SkyBlink's motion evidence is never brightness alone: a real mover <i>shifts position</i> — a centroid offset against Gaia, and in Difference mode a dipole (dark at the old position, bright at the new). A pure band change stays in one place and produces a single-signed blob, which the Two-Epoch Check rejects. Every frame's band is labelled in the viewer, and Case 3 publishes the cost honestly: same-detector (D2) epochs agree with Gaia to 1.3–2.7″, cross-detector epochs scatter 6.2–7.1″.</li>
+      <li><b>Colour vs motion (band mixing).</b> Epochs are imaged by whichever detector's strip covers the target, and the six detectors are six different wavelength bands — so a source can brighten or fade between epochs purely because the <i>band</i> changed, with no motion at all. That is why SkyBlink's motion evidence is never brightness alone: a real mover <i>shifts position</i> — a centroid offset against Gaia, and in Difference mode a dipole (dark at the old position, bright at the new). A pure band change stays in one place and produces a single-signed blob, which the Two-Epoch Check rejects. Every frame's band is labelled in the viewer, the “Same band only” toggle isolates same-detector epochs where the archive provides them, and Case 3 publishes the measured centroid scatter in full (1.3–7.1″).</li>
+      <li><b>Zodiacal light and flagged pixels.</b> Frames show the archive's IMAGE plane as delivered: the modelled zodiacal-light plane (a separate FITS extension) is not subtracted, and flagged pixels are not masked out, so a slow background gradient or an occasional hot pixel can appear in a difference view without anything in the sky having changed. The frame-info “Clean pixels” figure reports the share of cutout pixels whose FLAGS value is 0 (no flag bits) or the SOURCE bit alone; bit meanings are the archive's own header definitions, and the OVERFLOW bit does not count as clean.</li>
       <li><b>Epoch counts are the archive's, not a choice.</b> The 3–5 epochs per target are every distinct visit epoch the released DR1 + QR3 data contains for those fields — SPHEREx launched in 2025 and re-surveys the sky roughly every six months. The pipeline is epoch-agnostic: new releases drop in as new epochs without code changes.</li>
     </ol>
   </section>

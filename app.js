@@ -31,7 +31,7 @@ const $ = (s) => document.querySelector(s);
 
 const state = {
   target: TARGETS[0], manifest: null, idx: 0, playing: false,
-  timer: null, mode: "blink", imgCache: new Map(), gaiaOn: false,
+  timer: null, mode: "blink", imgCache: new Map(), gaiaOn: false, bandOnly: false,
 };
 const HAS_EXPLORER = !!document.querySelector("#frame-a");
 
@@ -65,6 +65,9 @@ async function loadTarget(slug, scroll) {
   if (!t) return;
   stopPlay();
   state.target = t; state.idx = 0; state.imgCache.clear();
+  state.bandOnly = false;
+  const bb0 = $("#btn-band");
+  if (bb0) bb0.classList.remove("on");
   document.querySelectorAll(".target-card").forEach((c) =>
     c.classList.toggle("active", c.dataset.slug === slug));
   $("#viewer-title").textContent = t.name;
@@ -87,6 +90,7 @@ async function loadTarget(slug, scroll) {
     $("#timeline").innerHTML = "";
     return;
   }
+  setupBandButton();
   buildTimeline();
   showFrame(0);
   renderBandChart();
@@ -100,16 +104,59 @@ async function loadTarget(slug, scroll) {
   if (scroll) $("#explorer").scrollIntoView({ behavior: "smooth" });
 }
 
+/* Same-band mode: SPHEREx detectors are different wavelength bands, so a
+   cross-detector blink mixes colour change with motion. When bandOnly is on,
+   stepping/play cycles only the frames from the most-observed detector. */
+function allowedFrames() {
+  const frames = state.manifest.frames;
+  if (!state.bandOnly) return frames.map((_, i) => i);
+  const counts = {};
+  frames.forEach((f) => { counts[f.detector] = (counts[f.detector] || 0) + 1; });
+  const det = Number(Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0]);
+  return frames.map((f, i) => (f.detector === det ? i : -1)).filter((i) => i >= 0);
+}
+function stepFrame(dir) {
+  if (!state.manifest) return;
+  const allowed = allowedFrames();
+  if (!allowed.length) return;
+  let pos = allowed.indexOf(state.idx);
+  if (pos < 0) pos = dir > 0 ? -1 : 0;
+  showFrame(allowed[(pos + dir + allowed.length) % allowed.length]);
+}
+function baseFrame() {
+  const a = allowedFrames();
+  return state.manifest.frames[a.length ? a[0] : 0];
+}
+function setupBandButton() {
+  const b = $("#btn-band");
+  if (!b || !state.manifest) return;
+  const counts = {};
+  state.manifest.frames.forEach((f) => { counts[f.detector] = (counts[f.detector] || 0) + 1; });
+  const best = Math.max(...Object.values(counts));
+  if (best < 2) {
+    b.disabled = true;
+    b.title = "Every epoch of this target comes from a different detector (a different wavelength band) — there is no same-band pair to isolate.";
+  } else {
+    b.disabled = false;
+    b.title = "Blink only the frames taken with the same detector — the same wavelength band — so colour differences cannot imitate motion";
+  }
+}
+
 function buildTimeline() {
   const tl = $("#timeline");
   tl.innerHTML = "";
+  const allowed = state.manifest ? allowedFrames() : [];
   state.manifest.frames.forEach((f, i) => {
     const wrap = document.createElement("div");
-    wrap.className = "tick-wrap" + (i === state.idx ? " on" : "");
+    wrap.className = "tick-wrap" + (i === state.idx ? " on" : "") +
+      (state.bandOnly && !allowed.includes(i) ? " off" : "");
     const tick = document.createElement("button");
     tick.className = "tick" + (i === state.idx ? " on" : "");
     tick.title = `${f.release} · ${f.date}`;
-    tick.addEventListener("click", () => showFrame(i));
+    tick.addEventListener("click", () => {
+      if (state.bandOnly && !allowedFrames().includes(i)) return;
+      stopPlay(); showFrame(i);
+    });
     const lab = document.createElement("span");
     lab.className = "tick-date";
     lab.textContent = f.date.slice(0, 7);
@@ -164,7 +211,7 @@ async function showFrame(i) {
     $("#diff-canvas").classList.add("hidden"); $("#side-pair").classList.add("hidden");
     $("#frame-wrap").classList.remove("hidden");
   } else if (state.mode === "side") {
-    const f0 = frames[0];
+    const f0 = baseFrame();
     $("#side-a").src = frameURL(f0); $("#side-b").src = frameURL(f);
     $("#side-a-cap").textContent = `${f0.release} · ${f0.date} · D${f0.detector}`;
     $("#side-b-cap").textContent = `${f.release} · ${f.date} · D${f.detector}`;
@@ -174,7 +221,7 @@ async function showFrame(i) {
     $("#frame-wrap").classList.remove("hidden");
     $("#frame-a").classList.add("hidden"); $("#frame-b").classList.add("hidden");
     $("#side-pair").classList.add("hidden");
-    await renderDiff(frames[0], f);
+    await renderDiff(baseFrame(), f);
   }
 }
 
@@ -319,7 +366,7 @@ function togglePlay() {
   if (state.playing) { stopPlay(); return; }
   state.playing = true;
   $("#btn-play").textContent = "⏸";
-  const step = () => showFrame(state.idx + 1);
+  const step = () => stepFrame(1);
   const restart = () => {
     if (state.timer) clearInterval(state.timer);
     state.timer = setInterval(step, 1000 / Number($("#fps").value));
@@ -340,8 +387,8 @@ document.addEventListener("keydown", (e) => {
   const tag = (e.target.tagName || "").toLowerCase();
   if (tag === "input" || tag === "textarea") return;
   if (e.code === "Space") { e.preventDefault(); togglePlay(); }
-  else if (e.key === "ArrowRight") { stopPlay(); showFrame(Math.min(state.idx + 1, frameCount() - 1)); }
-  else if (e.key === "ArrowLeft") { stopPlay(); showFrame(Math.max(state.idx - 1, 0)); }
+  else if (e.key === "ArrowRight") { stopPlay(); stepFrame(1); }
+  else if (e.key === "ArrowLeft") { stopPlay(); stepFrame(-1); }
   else if (e.key === "g" || e.key === "G") { const b = $("#btn-gaia"); if (b) b.click(); }
   else if (e.key === "1") setMode("blink");
   else if (e.key === "2") setMode("side");
@@ -411,13 +458,23 @@ if (HAS_EXPLORER) {
     });
   });
   $("#btn-play").addEventListener("click", togglePlay);
-  $("#btn-prev").addEventListener("click", () => { stopPlay(); if (state.manifest) showFrame(state.idx - 1); });
-  $("#btn-next").addEventListener("click", () => { stopPlay(); if (state.manifest) showFrame(state.idx + 1); });
+  $("#btn-prev").addEventListener("click", () => { stopPlay(); stepFrame(-1); });
+  $("#btn-next").addEventListener("click", () => { stopPlay(); stepFrame(1); });
   const gaiaBtn = $("#btn-gaia");
   if (gaiaBtn) gaiaBtn.addEventListener("click", () => {
     state.gaiaOn = !state.gaiaOn;
     gaiaBtn.classList.toggle("on", state.gaiaOn);
     drawGaia();
+  });
+  const bandBtn = $("#btn-band");
+  if (bandBtn) bandBtn.addEventListener("click", () => {
+    if (!state.manifest) return;
+    state.bandOnly = !state.bandOnly;
+    bandBtn.classList.toggle("on", state.bandOnly);
+    stopPlay();
+    if (state.bandOnly && !allowedFrames().includes(state.idx)) showFrame(allowedFrames()[0]);
+    buildTimeline();
+    showFrame(state.idx);
   });
   const tourBtn = $("#btn-tour");
   if (tourBtn) tourBtn.addEventListener("click", startTour);

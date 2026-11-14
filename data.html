@@ -41,9 +41,9 @@
 <main>
   <section class="page-hero">
     <h1>Data &amp; resources</h1>
-    <p class="lede">SkyBlink stands entirely on public archives and open tools. Every source
-    below is one we actually used, with what we used it for. All imagery on this site is a
-    real archive product — nothing is simulated, and no frame is AI-generated.</p>
+    <p class="lede">SkyBlink stands entirely on public archives and open tools. Below are the
+    sources we used or reviewed, each with what it was actually used for. All imagery on
+    this site is a real archive product — nothing is simulated, and no frame is AI-generated.</p>
   </section>
 
   <section class="panel-section">
@@ -55,9 +55,9 @@
         <tr><td>SPHEREx tutorial notebooks (IRSA)</td><td>Official worked examples for SPHEREx data, linked from the IRSA SPHEREx pages</td><td>The cutout recipe, spectral-WCS pattern and photometry approach our pipeline follows</td></tr>
         <tr><td><a href="http://byw.tools/wiseview" target="_blank" rel="noopener">WiseView</a></td><td>The established WISE blink comparator (Caselden et al.)</td><td>The interaction model we studied and adapted — blink interval, epoch stepping, difference imaging (see Methods)</td></tr>
         <tr><td><a href="https://mast.stsci.edu" target="_blank" rel="noopener">Gaia at MAST</a> / <a href="https://gea.esac.esa.int/archive/" target="_blank" rel="noopener">ESA Gaia archive</a></td><td>Gaia DR3 astrometry: positions, proper motions</td><td>Reference stars, per-epoch overlay, Barnard's Star centring and the Case 3 measurement baseline</td></tr>
-        <tr><td>CSA NEOSSat</td><td>Canada's asteroid-tracking microsatellite</td><td>Studied as the moving-object counterpart archive; its tracking case informs the Case Files' mover methodology</td></tr>
-        <tr><td><a href="https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca" target="_blank" rel="noopener">CADC NEOSSat community archive</a></td><td>NEOSSat data access via CADC</td><td>Access route evaluated for asteroid-frame blinking alongside SPHEREx</td></tr>
-        <tr><td><a href="https://github.com/CanadianSpaceAgency/NEOSSat-data-tutorial" target="_blank" rel="noopener">NEOSSat data tutorial</a></td><td>CSA's worked NEOSSat examples</td><td>Reference for handling a second survey's FITS conventions in the same blink framework</td></tr>
+        <tr><td>CSA NEOSSat</td><td>Canada's asteroid-tracking microsatellite</td><td>Reviewed. Not integrated in this build. Idea for future work: a moving-object (asteroid) comparison against NEOSSat frames</td></tr>
+        <tr><td><a href="https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca" target="_blank" rel="noopener">CADC NEOSSat community archive</a></td><td>NEOSSat data access via CADC</td><td>Reviewed as the access route for NEOSSat data. Not used for any frame on this site</td></tr>
+        <tr><td><a href="https://github.com/asc-csa/NEOSSAT_Tutorial" target="_blank" rel="noopener">NEOSSat data tutorial</a></td><td>CSA's worked NEOSSat examples</td><td>Read for FITS conventions; no code reused</td></tr>
         <tr><td><a href="https://irsa.ipac.caltech.edu/data/SPHEREx/docs/comet3iatlas/index.html" target="_blank" rel="noopener">IRSA 3I/ATLAS page</a></td><td>SPHEREx's observations of the interstellar comet</td><td>Case 1's backbone: the comet's position in each of its 259 exposures</td></tr>
       </tbody>
     </table>
@@ -68,7 +68,7 @@
     <table class="data-table">
       <thead><tr><th>Source / tool</th><th>Role in SkyBlink</th></tr></thead>
       <tbody>
-        <tr><td><a href="https://simbad.cds.unistra.fr" target="_blank" rel="noopener">SIMBAD (CDS)</a></td><td>Object-name resolution for the search box</td></tr>
+        <tr><td><a href="https://simbad.cds.unistra.fr" target="_blank" rel="noopener">SIMBAD (CDS)</a></td><td>Object-name resolution for the backend search (the deployed site pre-loads the five targets)</td></tr>
         <tr><td><a href="https://ssp.imcce.fr" target="_blank" rel="noopener">SkyBoT (IMCCE)</a></td><td>Solar-system object positions — the ephemeris cross-check behind Case 1</td></tr>
         <tr><td><a href="https://aladin.cds.unistra.fr" target="_blank" rel="noopener">Aladin Lite (CDS)</a></td><td>The full-sky SPHEREx HiPS cube viewer embedded on every target dossier</td></tr>
         <tr><td><a href="https://www.astropy.org" target="_blank" rel="noopener">Astropy · astroquery · reproject · photutils</a></td><td>The open-source Python astronomy stack the pipeline is built on</td></tr>

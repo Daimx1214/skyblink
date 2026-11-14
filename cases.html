@@ -53,14 +53,15 @@
     2025 — and between those visits it crossed roughly <b>79° of sky</b>. IRSA publishes a
     dedicated observation table giving the comet's position for every one of its 259
     SPHEREx exposures; SkyBlink's case pipeline takes the comet's own coordinates at each
-    visit and renders the field around them from the regular archive, so the visitor can be
-    blinked against the stars it passed.</p>
+    visit and renders the field around them from the regular archive. The two visits are
+    79° apart — completely different star fields — so they are shown side by side, not
+    blinked against each other.</p>
     <div id="case1-frames" class="case-frames"></div>
     <p class="case-status mono" id="case1-status">Case data: real SPHEREx frames at the comet's per-visit positions (IRSA 3I/ATLAS table).</p>
     <ol class="steps">
-      <li><b>Find it.</b> In each visit's frame, look for the soft, slightly extended glow that is not in the star charts — comets are fuzzy; stars are not.</li>
+      <li><b>Find it.</b> In each visit's frame, look for the soft, slightly extended glow that is not in the star charts — comets are fuzzy; stars are not. The comet is faint and extended (low signal-to-noise), and in the August frame it may not be visible by eye at all.</li>
       <li><b>Check it.</b> Run the Two-Epoch Check in reverse: the comet <i>should</i> fail the “known star at the new position” test — nothing in Gaia sits where it went.</li>
-      <li><b>Measure it.</b> Two visits, two positions, one straight line across 79° of sky — an interstellar trajectory measured from a public archive, on a web page.</li>
+      <li><b>Place it.</b> The two positions come from IRSA's observation table, not from our own measurement: RA 244.37°, Dec −16.47° on 2025-08-13 and RA 167.21°, Dec +5.15° on 2025-12-14 — two points 79° apart on one interstellar trajectory.</li>
     </ol>
   </article>
 
@@ -83,25 +84,28 @@
     <div class="case-tag">CASE 3 · THE MEASUREMENT</div>
     <h2>The Star That Barely Moves — Barnard's Star, measured</h2>
     <p>Barnard's Star owns the largest proper motion of any star: 10.4 arcseconds per year.
-    At SPHEREx's 3.1-arcsecond rendered pixels that is still only about three pixels a
-    year — so this case measures it properly. We centroid the star in each of SkyBlink's
-    five frames and compare with the position ESA Gaia predicts for that date:</p>
+    That is about 3.4 of SkyBlink's rendered pixels (3.1″ each) a year, or 1.7 native
+    SPHEREx pixels (6.15″ each) — so this case measures it properly. We centroid the star
+    in each of SkyBlink's five frames and compare with the position ESA Gaia predicts
+    for that date:</p>
     <table class="data-table mono" id="measure-table">
-      <thead><tr><th>Observed</th><th>Release</th><th>Detector</th><th>Measured − Gaia</th></tr></thead>
+      <thead><tr><th>Observed</th><th>Release</th><th>Detector</th><th>Centre distance</th><th>Measured − Gaia</th></tr></thead>
       <tbody>
-        <tr><td>2025-08-15</td><td>DR1</td><td>D5</td><td>2.5″</td></tr>
-        <tr><td>2025-09-30</td><td>DR1</td><td>D4</td><td>7.1″</td></tr>
-        <tr><td>2026-03-11</td><td>DR1</td><td>D2</td><td>1.3″</td></tr>
-        <tr><td>2026-05-04</td><td>DR1</td><td>D3</td><td>6.2″</td></tr>
-        <tr><td>2026-08-16</td><td>QR3</td><td>D2</td><td>2.7″</td></tr>
+        <tr><td>2025-08-15</td><td>DR1</td><td>D5</td><td>0.23°</td><td>2.5″</td></tr>
+        <tr><td>2025-09-30</td><td>DR1</td><td>D4</td><td>1.06°</td><td>7.1″</td></tr>
+        <tr><td>2026-03-11</td><td>DR1</td><td>D2</td><td>0.29°</td><td>1.3″</td></tr>
+        <tr><td>2026-05-04</td><td>DR1</td><td>D3</td><td>1.09°</td><td>6.2″</td></tr>
+        <tr><td>2026-08-16</td><td>QR3</td><td>D2</td><td>0.04°</td><td>2.7″</td></tr>
       </tbody>
     </table>
-    <p>The star is where Gaia says it should be, to within about one to two pixels in every
-    epoch — and the pattern in the scatter is itself a result: the two D2 frames agree
-    best (1.3″, 2.7″), while cross-detector epochs scatter more, because each of SPHEREx's
-    six detectors carries its own distortion solution. That is what honest survey
-    astrometry looks like, and it is why the Two-Epoch Check uses a tolerance, not a
-    hair trigger. Gaia reference: source 4472832130942575872, μ = (−801.6, +10362.4) mas/yr.</p>
+    <p>Barnard's Star lies within 1.3–7.1″ of Gaia's predicted position in all five frames
+    (0.4–2.3 rendered pixels of 3.1″; 0.2–1.2 native SPHEREx pixels of 6.15″). The two
+    largest offsets come from the two frames whose centre sits about 1.06° and 1.09° from
+    the star; the other three frames are within 0.3°. With only five frames we cannot
+    separate the effects of detector, position on the detector, and wavelength band, so
+    we treat that pattern as a hypothesis, not a finding. Either way, it is why the
+    Two-Epoch Check uses a tolerance, not a hair trigger. Gaia reference: source
+    4472832130942575872, μ = (−801.6, +10362.4) mas/yr.</p>
     <p><button class="pill-btn" id="btn-csv" type="button">⬇ Download this measurement (CSV)</button></p>
     <p><a href="target.html?t=barnards-star">Blink Barnard's Star yourself →</a></p>
   </article>
