@@ -22,7 +22,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "apps", "web")
-QA = "/tmp/qa3"
+QA = os.environ.get("SB_QA", "/tmp/qa3")
 W, H, FPS = 1920, 1080, 30
 S = W / 1280.0  # 1.5 scale vs v2
 VOID = (4, 6, 15); TEAL = (45, 212, 191); VIOLET = (139, 124, 246)
