@@ -135,10 +135,10 @@
     if (!set) return;
     const box = document.getElementById("case1-frames");
     const st = document.getElementById("case1-status");
-    const names = Object.keys(set.frames).sort();
+    const names = Object.keys(set.frames || set.frames).sort();
     box.innerHTML = names.map((n, i) => {
       const f = set.manifest.frames[i] || {};
-      return `<figure><img src="${set.frames[n]}" alt="3I/ATLAS field, ${f.date || ""}">
+      return `<figure><img src="${(set.frames || set.frames)[n]}" alt="3I/ATLAS field, ${f.date || ""}">
         <figcaption class="mono">${f.date || ""} · ${f.release || ""} · detector ${f.detector || ""}</figcaption></figure>`;
     }).join("");
     st.textContent = "Case data: live — real SPHEREx frames at the comet's per-visit positions (IRSA 3I/ATLAS table).";
