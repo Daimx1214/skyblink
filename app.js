@@ -104,11 +104,18 @@ function buildTimeline() {
   const tl = $("#timeline");
   tl.innerHTML = "";
   state.manifest.frames.forEach((f, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "tick-wrap" + (i === state.idx ? " on" : "");
     const tick = document.createElement("button");
     tick.className = "tick" + (i === state.idx ? " on" : "");
     tick.title = `${f.release} · ${f.date}`;
     tick.addEventListener("click", () => showFrame(i));
-    tl.appendChild(tick);
+    const lab = document.createElement("span");
+    lab.className = "tick-date";
+    lab.textContent = f.date.slice(0, 7);
+    wrap.appendChild(tick);
+    wrap.appendChild(lab);
+    tl.appendChild(wrap);
   });
 }
 
@@ -134,6 +141,8 @@ async function showFrame(i) {
   state.idx = (i + frames.length) % frames.length;
   const f = frames[state.idx];
   document.querySelectorAll(".tick").forEach((el, j) =>
+    el.classList.toggle("on", j === state.idx));
+  document.querySelectorAll(".tick-wrap").forEach((el, j) =>
     el.classList.toggle("on", j === state.idx));
   $("#legend").innerHTML =
     `Frame ${String.fromCharCode(65 + state.idx)} · <span class="rel rel-${f.release}">${f.release}</span>` +

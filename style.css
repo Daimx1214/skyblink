@@ -90,8 +90,11 @@ main{max-width:1180px;margin:0 auto;padding:0 18px 40px}
   width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:15px}
 .transport button:hover{border-color:var(--teal)}
 .timeline{flex:1;display:flex;gap:6px;align-items:center;min-width:120px}
-.tick{flex:1;height:8px;border-radius:99px;background:var(--line);cursor:pointer;border:0;padding:0}
+.tick{width:100%;height:8px;border-radius:99px;background:var(--line);cursor:pointer;border:0;padding:0}
 .tick.on{background:var(--amber)}
+.tick-wrap{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+.tick-date{font-size:10px;color:var(--dim);text-align:center;letter-spacing:.02em}
+.tick-wrap.on .tick-date{color:var(--amber);font-weight:600}
 .fps{display:flex;gap:8px;align-items:center;color:var(--mist);font-size:12px}
 .fps input{accent-color:var(--teal)}
 
