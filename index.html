@@ -117,8 +117,8 @@
       <div class="insp-card">
         <h3>Frame info</h3>
         <dl class="mono" id="frame-info"></dl>
-        <p class="fineprint">Dates are observation dates from the archive query
-        (not file processing dates). All frames of a target share one grid and
+        <p class="fineprint">Each date is the exposure's own observation date,
+        read from its FITS DATE-OBS header (never the file processing date). All frames of a target share one grid and
         one brightness stretch, so blinking shows the sky changing — not the scaling.
         Each SPHEREx detector sees a different wavelength band, though, so a frame can
         also change brightness because of colour; every frame's band is labelled, and
@@ -176,7 +176,7 @@
     <ol class="steps">
       <li><b>Query.</b> The archive (IRSA) is searched for every SPHEREx observation of your patch of sky, in the current data releases.</li>
       <li><b>Align.</b> Cutouts are reprojected onto one shared north-up grid, with one shared brightness stretch across all epochs.</li>
-      <li><b>Blink.</b> Frames flip in place. Stars stay still; movers jump, variables pulse, and artefacts fail the Two-Epoch Check.</li>
+      <li><b>Blink.</b> Frames flip in place. Stars stay still; movers jump, variables pulse, and artefacts are screened out by the Two-Epoch Check — our vetting method, applied in the validation on the Methods page.</li>
     </ol>
   </section>
 

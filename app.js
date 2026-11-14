@@ -7,7 +7,7 @@ const TARGETS = [
   { slug: "barnards-star", name: "Barnard's Star", ra: 269.4464, dec: 4.7671, fov: 5,
     kind: "Proper motion · 10.4″/yr",
     blurb: "The fastest-moving star in the sky.",
-    look: "The fastest-moving star in the sky. Blink: it creeps. Difference mode: a blue–orange dipole. Its measured shift is compared with Gaia's prediction in the case file." },
+    look: "The fastest-moving star in the sky. Blink: it creeps. Difference mode: a blue–orange dipole. Its measured shift is compared with Gaia's prediction in the case file. The dark block at its centre in some frames is its saturated core — the star is too bright for the detector there, so the position is measured from the unsaturated wings." },
   { slug: "wise-0855", name: "WISE 0855", ra: 133.7951, dec: -7.2451, fov: 3,
     kind: "Proper motion · 8.1″/yr",
     blurb: "The coldest known brown dwarf (~250 K).",

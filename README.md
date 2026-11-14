@@ -2,8 +2,9 @@
 
 **Watch the sky change.** SkyBlink is a public web tool that shows how a patch of
 sky changes over time in real NASA **SPHEREx** survey images — like a little video
-of the sky. Moving objects jump, variable stars pulse, and artefacts fail our
-**Two-Epoch Check**. The deployed site pre-loads the five official test targets;
+of the sky. Moving objects jump, variable stars pulse, and artefacts are
+screened out by our **Two-Epoch Check** — a vetting method, set out in
+`docs/METHODS.md` and applied in our validation. The deployed site pre-loads the five official test targets;
 the same pipeline in this repo renders any coordinates locally or via its API
 service.
 
@@ -58,8 +59,11 @@ north-up grid (3.1″/px) ──► ONE shared asinh stretch ──► PNG frame
 Key facts baked into the pipeline (all verified against IRSA's own SPHEREx
 tutorial notebooks — see `docs/METHODS.md`):
 
-- Observation dates come from SIA/TAP metadata (`t_min`), never the FITS `DATE`
-  header (that's processing time).
+- Observation dates come from each exposure's own FITS `DATE-OBS` header,
+  read from the file actually rendered and cross-checked against the archive
+  query. (An earlier build trusted SIA `t_min` cluster stamps, which
+  mislabelled frames rendered from a different exposure of the same visit
+  cluster; the FITS `DATE` header is processing time and is never used.)
 - SPHEREx's six detectors do **not** share one footprint; the pipeline picks,
   per epoch, the frame that actually contains the target and records its detector.
 - Wavelength in SPHEREx is per-pixel (spectral WCS); there is no `PIXSOLID`

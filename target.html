@@ -98,8 +98,9 @@
       <div class="insp-card">
         <h3>Frame info</h3>
         <dl class="mono" id="frame-info"></dl>
-        <p class="fineprint">Clean-pixel % counts SPHEREx FLAGS values in the conservative
-        good set (unflagged, SOURCE, or SOURCE-only combinations) over the exposure's cutout.</p>
+        <p class="fineprint">Clean-pixel % counts the cutout pixels whose SPHEREx FLAGS
+        value is 0 (no flag bits) or the SOURCE bit alone; the OVERFLOW bit does not
+        count as clean.</p>
       </div>
     </aside>
   </section>
