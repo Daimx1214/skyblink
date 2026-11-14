@@ -7,7 +7,7 @@ const TARGETS = [
   { slug: "barnards-star", name: "Barnard's Star", ra: 269.4464, dec: 4.7671, fov: 5,
     kind: "Proper motion · 10.4″/yr",
     blurb: "The fastest-moving star in the sky.",
-    look: "The fastest-moving star in the sky. Blink: it creeps. Difference mode: a blue/red dipole. Its measured shift is compared with Gaia's prediction in the case file." },
+    look: "The fastest-moving star in the sky. Blink: it creeps. Difference mode: a blue–orange dipole. Its measured shift is compared with Gaia's prediction in the case file." },
   { slug: "wise-0855", name: "WISE 0855", ra: 133.7951, dec: -7.2451, fov: 3,
     kind: "Proper motion · 8.1″/yr",
     blurb: "The coldest known brown dwarf (~250 K).",
@@ -90,6 +90,7 @@ async function loadTarget(slug, scroll) {
   buildTimeline();
   showFrame(0);
   renderBandChart();
+  renderSpectrum();
   fillDetail();
   try {
     const u = new URL(location.href);
@@ -182,9 +183,12 @@ async function renderDiff(fa, fb) {
     const da = mk(ia), db = mk(ib);
     const ctx = cv.getContext("2d");
     const out = ctx.createImageData(w, h);
+    // Diverging, colour-blind-safe map: gain = orange, loss = blue, on near-black.
     for (let p = 0; p < da.length; p += 4) {
-      const d = (db[p] - da[p]) * 1.6 + 128; // later minus earlier, neutral grey
-      out.data[p] = out.data[p + 1] = out.data[p + 2] = Math.max(0, Math.min(255, d));
+      let v = (db[p] - da[p]) * 1.6 / 127.5;
+      v = Math.max(-1, Math.min(1, v));
+      if (v >= 0) { out.data[p] = 255 * v; out.data[p + 1] = 138 * v; out.data[p + 2] = 30 * v; }
+      else { const a = -v; out.data[p] = 45 * a; out.data[p + 1] = 115 * a; out.data[p + 2] = 255 * a; }
       out.data[p + 3] = 255;
     }
     ctx.putImageData(out, 0, 0);
@@ -252,6 +256,30 @@ function renderBandChart() {
 }
 
 /* ---------- target detail fill (target.html) ---------- */
+function renderSpectrum() {
+  const sec = $("#spectrum-section"), el = $("#spectrum-chart"), note = $("#spectrum-note");
+  if (!sec || !el) return;
+  const sp = state.manifest && state.manifest.spectrum;
+  if (!sp || !sp.wave_um || !sp.wave_um.length) { sec.hidden = true; return; }
+  sec.hidden = false;
+  if (note) note.innerHTML = `Measured from the <b>${sp.source}</b> — aperture photometry at this
+    target's position in every spectral plane of the cube. ${sp.note || ""}`;
+  const W = 860, H = 240, padL = 46, padB = 30, padT = 12;
+  const xs = sp.wave_um, ys = sp.flux_mjy;
+  const x0 = Math.min(...xs), x1 = Math.max(...xs);
+  const y1 = Math.max(...ys) * 1.1, y0 = Math.min(0, Math.min(...ys));
+  const X = (v) => padL + (Math.log(v) - Math.log(x0)) / (Math.log(x1) - Math.log(x0)) * (W - padL - 12);
+  const Y = (v) => padT + (y1 - v) / (y1 - y0) * (H - padT - padB);
+  const pts = xs.map((v, i) => `${X(v).toFixed(1)},${Y(ys[i]).toFixed(1)}`).join(" ");
+  const ticks = [0.8, 1, 1.5, 2, 3, 4, 5].filter(t => t >= x0 && t <= x1)
+    .map(t => `<text x="${X(t)}" y="${H - 8}" text-anchor="middle" class="bc-x2">${t} µm</text>`).join("");
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Spectrum chart">
+    <line x1="${padL}" y1="${Y(0)}" x2="${W - 12}" y2="${Y(0)}" stroke="var(--line)"/>
+    <polyline points="${pts}" fill="none" stroke="var(--teal)" stroke-width="1.6"/>
+    ${xs.map((v, i) => `<circle cx="${X(v)}" cy="${Y(ys[i])}" r="2.1" fill="var(--amber)"/>`).join("")}
+    <text x="6" y="${Y(y1) + 4}" class="bc-x2">mJy</text>${ticks}</svg>`;
+}
+
 function fillDetail() {
   const story = $("#target-story");
   if (!story || !state.manifest) return;
@@ -292,6 +320,51 @@ function togglePlay() {
 }
 
 /* ---------- search ---------- */
+/* ---------- helpers + keyboard shortcuts ---------- */
+function frameCount() { return state.manifest ? state.manifest.frames.length : 0; }
+function setMode(m) {
+  const b = document.querySelector(`.mode-tabs button[data-mode="${m}"]`);
+  if (b) b.click();
+}
+document.addEventListener("keydown", (e) => {
+  if (!HAS_EXPLORER) return;
+  const tag = (e.target.tagName || "").toLowerCase();
+  if (tag === "input" || tag === "textarea") return;
+  if (e.code === "Space") { e.preventDefault(); togglePlay(); }
+  else if (e.key === "ArrowRight") { stopPlay(); showFrame(Math.min(state.idx + 1, frameCount() - 1)); }
+  else if (e.key === "ArrowLeft") { stopPlay(); showFrame(Math.max(state.idx - 1, 0)); }
+  else if (e.key === "g" || e.key === "G") { const b = $("#btn-gaia"); if (b) b.click(); }
+  else if (e.key === "1") setMode("blink");
+  else if (e.key === "2") setMode("side");
+  else if (e.key === "3") setMode("diff");
+});
+
+/* ---------- guided tour (home page) ---------- */
+const TOUR = [
+  { at: 0, cap: "This is Barnard's Star — the fastest-moving star in the sky. The bright star near the centre is our suspect.",
+    run() { loadTarget("barnards-star", true); } },
+  { at: 2600, cap: "Five real SPHEREx visits — Aug 2025 to Aug 2026. Blink them, the way astronomers have hunted movers for a century:",
+    run() { if (!state.playing) togglePlay(); } },
+  { at: 11000, cap: "See it creep? Every other star stands still. In Difference view, motion turns into a blue–orange dipole:",
+    run() { setMode("diff"); } },
+  { at: 18500, cap: "Now check it against ESA Gaia DR3 — every known star, proper-motion propagated to this exact date. Rings sit on stars; nothing sits where the suspect is going.",
+    run() { setMode("blink"); state.gaiaOn = true; const b = $("#btn-gaia"); if (b) b.classList.add("on"); drawGaia(); } },
+  { at: 26500, cap: "We measured the shift in all five epochs — it matches Gaia's prediction to about a pixel. The full evidence is in Case Files. The sky is yours now.",
+    run() {} },
+];
+let tourTimers = [];
+function endTour() {
+  tourTimers.forEach(clearTimeout); tourTimers = [];
+  const bar = $("#tour-bar"); if (bar) bar.hidden = true;
+}
+function startTour() {
+  const bar = $("#tour-bar"), cap = $("#tour-cap");
+  if (!bar || !cap) return;
+  endTour(); bar.hidden = false;
+  TOUR.forEach(s => tourTimers.push(setTimeout(() => { cap.textContent = s.cap; s.run(); }, s.at)));
+  tourTimers.push(setTimeout(endTour, 35000));
+}
+
 function handleSearch(qRaw) {
   const q = qRaw.trim().toLowerCase();
   if (!q) return;
@@ -337,6 +410,10 @@ if (HAS_EXPLORER) {
     gaiaBtn.classList.toggle("on", state.gaiaOn);
     drawGaia();
   });
+  const tourBtn = $("#btn-tour");
+  if (tourBtn) tourBtn.addEventListener("click", startTour);
+  const tourExit = $("#tour-exit");
+  if (tourExit) tourExit.addEventListener("click", endTour);
   const shareBtn = $("#btn-share");
   if (shareBtn) shareBtn.addEventListener("click", async () => {
     const u = new URL(location.href);
