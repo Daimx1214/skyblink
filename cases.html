@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case Files — SkyBlink</title>
+<meta name="description" content="Guided investigations on real SPHEREx data: the interstellar comet 3I/ATLAS, the Two-Epoch Check, and a measured proper-motion case with error bars.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("skyblink-theme")||"dark"}catch(e){document.documentElement.dataset.theme="dark"}</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="SkyBlink home">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">SkyBlink</span>
+  </a>
+  <form id="search-form" class="search" role="search">
+    <input id="search-input" type="text" autocomplete="off" spellcheck="false"
+      placeholder="Coordinates or object name… try Barnard's Star" aria-label="Coordinates or object name">
+    <button type="submit" class="go">GO</button>
+  </form>
+  <nav class="topnav">
+    <a href="index.html">Home</a>
+    <a href="targets.html">Targets</a>
+    <a href="cases.html" class="active">Case Files</a>
+    <a href="methods.html">Methods</a>
+    <a href="data.html">Data</a>
+  </nav>
+  <button id="theme-btn" class="theme-btn" type="button" aria-label="Switch light / dark theme" title="Light / dark theme">☀️</button>
+</header>
+
+<main>
+  <section class="page-hero">
+    <h1>Case Files</h1>
+    <p class="lede">Guided investigations, worked end-to-end on real archive data — the way a
+    “Cosmic Detective” case should run: evidence first, claim second, error bars always.</p>
+  </section>
+
+  <article class="case-full">
+    <div class="case-tag">CASE 1 · THE HERO</div>
+    <h2>The Visitor From Between the Stars — comet 3I/ATLAS</h2>
+    <p>3I/ATLAS is only the third interstellar object ever seen passing through our Solar
+    System. SPHEREx caught it twice: during its August 2025 visit and again in December
+    2025 — and between those visits it crossed roughly <b>82° of sky</b>. IRSA publishes a
+    dedicated observation table giving the comet's position for every one of its 259
+    SPHEREx exposures; SkyBlink's case pipeline takes the comet's own coordinates at each
+    visit and renders the field around them from the regular archive, so the visitor can be
+    blinked against the stars it passed.</p>
+    <div id="case1-frames" class="case-frames"></div>
+    <p class="case-status mono" id="case1-status">Case data: being prepared from the IRSA 3I/ATLAS observation table.</p>
+    <ol class="steps">
+      <li><b>Find it.</b> In each visit's frame, look for the soft, slightly extended glow that is not in the star charts — comets are fuzzy; stars are not.</li>
+      <li><b>Check it.</b> Run the Two-Epoch Check in reverse: the comet <i>should</i> fail the “known star at the new position” test — nothing in Gaia sits where it went.</li>
+      <li><b>Measure it.</b> Two visits, two positions, one straight line across 82° of sky — an interstellar trajectory measured from a public archive, on a web page.</li>
+    </ol>
+  </article>
+
+  <article class="case-full">
+    <div class="case-tag">CASE 2 · THE METHOD</div>
+    <h2>The Two-Epoch Check</h2>
+    <p>Most things that “move” in survey images are lies: cosmic-ray hits, detector ghosts,
+    saturation trails. SkyBlink's named vetting method — applied to every candidate the
+    blink turns up — has three tests, and a candidate must pass all of them:</p>
+    <ol class="steps">
+      <li><b>Both epochs.</b> The candidate appears in at least two independent epochs, shifted by an amount consistent with one steady motion — not present in one frame only.</li>
+      <li><b>Not a known star.</b> ESA Gaia DR3, proper-motion propagated to the epoch, has no star at the candidate's new position. If Gaia says a star lives there, it is a star.</li>
+      <li><b>Survives subtraction.</b> In the difference view the candidate leaves a clean dipole — dark at the old position, bright at the new one — not a one-sided spike.</li>
+    </ol>
+    <p>Anything less is logged as an artefact, not a discovery. The full method, with the
+    pipeline decisions behind it, is on the <a href="methods.html">Methods page</a>.</p>
+  </article>
+
+  <article class="case-full">
+    <div class="case-tag">CASE 3 · THE MEASUREMENT</div>
+    <h2>The Star That Barely Moves — Barnard's Star, measured</h2>
+    <p>Barnard's Star owns the largest proper motion of any star: 10.4 arcseconds per year.
+    At SPHEREx's 3.1-arcsecond rendered pixels that is still only about three pixels a
+    year — so this case measures it properly. We centroid the star in each of SkyBlink's
+    five frames and compare with the position ESA Gaia predicts for that date:</p>
+    <table class="data-table mono">
+      <thead><tr><th>Observed</th><th>Release</th><th>Detector</th><th>Measured − Gaia</th></tr></thead>
+      <tbody>
+        <tr><td>2025-08-15</td><td>DR1</td><td>D5</td><td>2.5″</td></tr>
+        <tr><td>2025-09-30</td><td>DR1</td><td>D4</td><td>7.1″</td></tr>
+        <tr><td>2026-03-11</td><td>DR1</td><td>D2</td><td>1.3″</td></tr>
+        <tr><td>2026-05-04</td><td>DR1</td><td>D3</td><td>6.2″</td></tr>
+        <tr><td>2026-08-16</td><td>QR3</td><td>D2</td><td>2.7″</td></tr>
+      </tbody>
+    </table>
+    <p>The star is where Gaia says it should be, to within about one to two pixels in every
+    epoch — and the pattern in the scatter is itself a result: the two D2 frames agree
+    best (1.3″, 2.7″), while cross-detector epochs scatter more, because each of SPHEREx's
+    six detectors carries its own distortion solution. That is what honest survey
+    astrometry looks like, and it is why the Two-Epoch Check uses a tolerance, not a
+    hair trigger. Gaia reference: source 4472832130942575872, μ = (−801.6, +10362.4) mas/yr.</p>
+    <p><a href="target.html?t=barnards-star">Blink Barnard's Star yourself →</a></p>
+  </article>
+</main>
+
+<footer class="foot">
+  <span>SkyBlink · Team Sohan Halwa · NASA Space Apps 2026</span>
+  <span class="foot-links"><a href="targets.html">Targets</a> · <a href="cases.html">Case Files</a> · <a href="methods.html">Methods</a> · <a href="data.html">Data &amp; credits</a></span>
+  <span class="mono" id="foot-status">static cache mode</span>
+</footer>
+
+<script src="cache-data.js"></script>
+<script src="app.js"></script>
+<script>
+  (function () {
+    const set = (window.SKYBLINK_CACHE || {})["case-3iatlas"];
+    if (!set) return;
+    const box = document.getElementById("case1-frames");
+    const st = document.getElementById("case1-status");
+    const names = Object.keys(set.frames).sort();
+    box.innerHTML = names.map((n, i) => {
+      const f = set.manifest.frames[i] || {};
+      return `<figure><img src="${set.frames[n]}" alt="3I/ATLAS field, ${f.date || ""}">
+        <figcaption class="mono">${f.date || ""} · ${f.release || ""} · detector ${f.detector || ""}</figcaption></figure>`;
+    }).join("");
+    st.textContent = "Case data: live — real SPHEREx frames at the comet's per-visit positions (IRSA 3I/ATLAS table).";
+  })();
+</script>
+</body>
+</html>

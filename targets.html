@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Targets — SkyBlink</title>
+<meta name="description" content="The five official NASA Space Apps test targets for the SPHEREx blink challenge, pre-loaded with real DR1 + QR3 epochs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("skyblink-theme")||"dark"}catch(e){document.documentElement.dataset.theme="dark"}</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="SkyBlink home">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">SkyBlink</span>
+  </a>
+  <form id="search-form" class="search" role="search">
+    <input id="search-input" type="text" autocomplete="off" spellcheck="false"
+      placeholder="Coordinates or object name… try Barnard's Star" aria-label="Coordinates or object name">
+    <button type="submit" class="go">GO</button>
+  </form>
+  <nav class="topnav">
+    <a href="index.html">Home</a>
+    <a href="targets.html" class="active">Targets</a>
+    <a href="cases.html">Case Files</a>
+    <a href="methods.html">Methods</a>
+    <a href="data.html">Data</a>
+  </nav>
+  <button id="theme-btn" class="theme-btn" type="button" aria-label="Switch light / dark theme" title="Light / dark theme">☀️</button>
+</header>
+
+<main>
+  <section class="page-hero">
+    <h1>The five official test targets</h1>
+    <p class="lede">NASA's “Planet X and SPHEREx” challenge names five objects to test a blink
+    tool against: two high-proper-motion brown dwarfs, the fastest-moving star, and two
+    variable stars. Every one is pre-loaded here with real SPHEREx epochs from Data
+    Release 1 and Quick Release 3 — one uniformly processed set, never mixed with
+    superseded releases. Open a dossier to blink it, chart its detector bands, and see
+    it in the full-sky context viewer.</p>
+  </section>
+
+  <section class="targets">
+    <div class="target-grid" id="target-grid"></div>
+  </section>
+
+  <section class="how">
+    <h2>Why these five?</h2>
+    <ol class="steps">
+      <li><b>Movers.</b> Barnard's Star, WISE 0855 and Epsilon Indi B cross the sky measurably between survey visits — the blink test for anything planet-like.</li>
+      <li><b>Changers.</b> RW Aurigae and R Draconis stay in place but change brightness — the blink test for variable and transient events.</li>
+      <li><b>Honesty checks.</b> WISE 0855 is nearly invisible at short wavelengths, and Barnard's Star saturates its core — the set tests whether a tool shows limits instead of inventing signal.</li>
+    </ol>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>SkyBlink · Team Sohan Halwa · NASA Space Apps 2026</span>
+  <span class="foot-links"><a href="targets.html">Targets</a> · <a href="cases.html">Case Files</a> · <a href="methods.html">Methods</a> · <a href="data.html">Data &amp; credits</a></span>
+  <span class="mono" id="foot-status">static cache mode</span>
+</footer>
+
+<script src="cache-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

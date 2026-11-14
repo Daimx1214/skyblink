@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Target — SkyBlink</title>
+<meta name="description" content="Target dossier: blink real SPHEREx epochs, chart the detector bands, overlay ESA Gaia stars, and view the field in the SPHEREx all-sky cube.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("skyblink-theme")||"dark"}catch(e){document.documentElement.dataset.theme="dark"}</script>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="SkyBlink home">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">SkyBlink</span>
+  </a>
+  <form id="search-form" class="search" role="search">
+    <input id="search-input" type="text" autocomplete="off" spellcheck="false"
+      placeholder="Coordinates or object name… try Barnard's Star" aria-label="Coordinates or object name">
+    <button type="submit" class="go">GO</button>
+  </form>
+  <nav class="topnav">
+    <a href="index.html">Home</a>
+    <a href="targets.html" class="active">Targets</a>
+    <a href="cases.html">Case Files</a>
+    <a href="methods.html">Methods</a>
+    <a href="data.html">Data</a>
+  </nav>
+  <button id="theme-btn" class="theme-btn" type="button" aria-label="Switch light / dark theme" title="Light / dark theme">☀️</button>
+</header>
+
+<main>
+  <p class="crumbs mono"><a href="targets.html">← All targets</a></p>
+
+  <section class="explorer" id="explorer" aria-label="Blink explorer">
+    <div class="viewer-card">
+      <div class="viewer-head">
+        <div>
+          <div class="viewer-title" id="viewer-title">Loading…</div>
+          <div class="viewer-sub mono" id="viewer-sub"></div>
+        </div>
+        <div class="mode-tabs" role="tablist" aria-label="View mode">
+          <button data-mode="blink" class="active">Blink</button>
+          <button data-mode="side">Side by side</button>
+          <button data-mode="diff">Difference</button>
+        </div>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="frame-wrap" id="frame-wrap">
+          <img id="frame-a" alt="Earlier epoch image">
+          <img id="frame-b" alt="Later epoch image" class="hidden">
+          <canvas id="diff-canvas" class="hidden"></canvas>
+          <canvas id="gaia-canvas" class="hidden" aria-hidden="true"></canvas>
+          <div class="crosshair" aria-hidden="true"></div>
+          <div class="scalebar mono" aria-hidden="true">1 arcmin</div>
+        </div>
+        <div class="side-pair hidden" id="side-pair">
+          <figure><img id="side-a" alt="Earlier epoch"><figcaption class="mono" id="side-a-cap"></figcaption></figure>
+          <figure><img id="side-b" alt="Later epoch"><figcaption class="mono" id="side-b-cap"></figcaption></figure>
+        </div>
+      </div>
+
+      <div class="legend mono" id="legend">Loading frames…</div>
+
+      <div class="transport">
+        <button id="btn-prev" aria-label="Previous epoch">⏮</button>
+        <button id="btn-play" aria-label="Play or pause blink">▶</button>
+        <button id="btn-next" aria-label="Next epoch">⏭</button>
+        <div class="timeline" id="timeline" aria-label="Epoch timeline"></div>
+        <label class="fps mono">speed
+          <input id="fps" type="range" min="1" max="10" value="3">
+        </label>
+      </div>
+      <div class="viewer-actions">
+        <button id="btn-gaia" class="pill-btn" type="button" title="Show ESA Gaia DR3 stars, proper-motion propagated to this epoch">Gaia overlay</button>
+        <button id="btn-share" class="pill-btn" type="button" title="Copy a link to this exact view">Share link</button>
+      </div>
+    </div>
+
+    <aside class="inspector">
+      <div class="insp-card">
+        <h3>Dossier</h3>
+        <div id="target-story">—</div>
+      </div>
+      <div class="insp-card">
+        <h3>Frame info</h3>
+        <dl class="mono" id="frame-info"></dl>
+        <p class="fineprint">Clean-pixel % counts SPHEREx FLAGS values in the conservative
+        good set (unflagged, SOURCE, or SOURCE-only combinations) over the exposure's cutout.</p>
+      </div>
+    </aside>
+  </section>
+
+  <section class="panel-section">
+    <h2>The target, band by band</h2>
+    <p class="section-sub">SPHEREx images the sky in 102 spectral bands grouped into six
+    detectors. A field is visited by different detectors at different times, so a target's
+    epochs double as a coarse tour of its spectrum.</p>
+    <div id="band-chart" class="band-chart"></div>
+    <p id="look-for" class="hidden"></p>
+  </section>
+
+  <section class="panel-section">
+    <h2>Full-sky context — SPHEREx all-sky cube in Aladin Lite</h2>
+    <p class="section-sub">The same sky in the IRSA SPHEREx HiPS all-sky cube (CDS Aladin Lite).
+    Zoom and switch cube frames to move through the 102 bands; the view opens on this target.</p>
+    <div class="aladin-wrap"><div id="aladin-lite-div"></div></div>
+    <p class="fineprint">Aladin Lite © CDS, Université de Strasbourg. HiPS cube: SPHEREx via IRSA.</p>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>SkyBlink · Team Sohan Halwa · NASA Space Apps 2026</span>
+  <span class="foot-links"><a href="targets.html">Targets</a> · <a href="cases.html">Case Files</a> · <a href="methods.html">Methods</a> · <a href="data.html">Data &amp; credits</a></span>
+  <span class="mono" id="foot-status">static cache mode</span>
+</footer>
+
+<script src="cache-data.js"></script>
+<script src="app.js"></script>
+<script src="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js"></script>
+<script>
+  try {
+    const slug = new URLSearchParams(location.search).get("t") || "barnards-star";
+    const t = TARGETS.find((x) => x.slug === slug) || TARGETS[0];
+    A.init.then(() => {
+      const aladin = A.aladin("#aladin-lite-div", {
+        survey: "https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube",
+        fov: 0.35, target: t.ra + " " + t.dec, showSettingsControl: false,
+      });
+    });
+  } catch (e) { /* Aladin is an enhancement; the dossier works without it */ }
+</script>
+</body>
+</html>

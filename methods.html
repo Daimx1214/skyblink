@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methods — SkyBlink</title>
+<meta name="description" content="How SkyBlink turns SPHEREx archive exposures into honest blink comparisons: pipeline, the Two-Epoch Check, and stated limits.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("skyblink-theme")||"dark"}catch(e){document.documentElement.dataset.theme="dark"}</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="SkyBlink home">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">SkyBlink</span>
+  </a>
+  <form id="search-form" class="search" role="search">
+    <input id="search-input" type="text" autocomplete="off" spellcheck="false"
+      placeholder="Coordinates or object name… try Barnard's Star" aria-label="Coordinates or object name">
+    <button type="submit" class="go">GO</button>
+  </form>
+  <nav class="topnav">
+    <a href="index.html">Home</a>
+    <a href="targets.html">Targets</a>
+    <a href="cases.html">Case Files</a>
+    <a href="methods.html" class="active">Methods</a>
+    <a href="data.html">Data</a>
+  </nav>
+  <button id="theme-btn" class="theme-btn" type="button" aria-label="Switch light / dark theme" title="Light / dark theme">☀️</button>
+</header>
+
+<main>
+  <section class="page-hero">
+    <h1>Methods</h1>
+    <p class="lede">A blink comparator is only as good as its discipline. These are the exact
+    decisions SkyBlink makes between the archive and your screen — including the two
+    mistakes we caught and fixed during the build.</p>
+  </section>
+
+  <section class="panel-section">
+    <h2>The pipeline</h2>
+    <ol class="steps">
+      <li><b>Discover.</b> IRSA's SIA service is queried for every SPHEREx observation intersecting the field, restricted to the current uniform releases: DR1 and QR3 (collections <span class="mono">spherex_dr1, spherex_dr1_deep, spherex_qr3, spherex_qr3_deep</span>). The superseded QR2 processing is never mixed in.</li>
+      <li><b>Cluster &amp; choose.</b> Observations are clustered into epochs (gaps over 20 days). The archive returns frames whose footprints merely <i>intersect</i> the search circle, so for each epoch we keep the frame whose centre is closest to the target — across <i>all six detectors</i>, because the detectors image offset strips of sky and forcing one detector loses whole epochs.</li>
+      <li><b>Cut out.</b> Each chosen exposure is fetched as an archive cutout centred on the target, following the IRSA tutorial notebooks' recipe.</li>
+      <li><b>Align.</b> Cutouts are reprojected (Astropy + reproject) onto one shared north-up tangent-plane grid at 3.1″/pixel for the target.</li>
+      <li><b>One stretch.</b> A single percentile + asinh brightness stretch is computed across <i>all</i> epochs of a target and applied identically — so brightness differences between frames are the sky changing, not the scaling.</li>
+      <li><b>Date honestly.</b> Epoch dates come from the archive query's observation times, never from file-processing timestamps in FITS headers.</li>
+    </ol>
+  </section>
+
+  <section class="panel-section">
+    <h2>Two mistakes we caught — and how</h2>
+    <ol class="steps">
+      <li><b>The upside-down sky.</b> Reprojection arrays run from low to high declination, so our first renders were south-up. We caught it by checking a rendered frame against the Gaia-propagated position of Barnard's Star: the star sat mirrored. Frames are now flipped to true north-up, verified both numerically (centroid within ~1 px of the WCS prediction) and visually (the difference dipole points along the known proper-motion direction).</li>
+      <li><b>The 4.4-arcminute stale centre.</b> Barnard's Star moves so fast that its catalogue J2000 position is ~4.4′ away from where it is now — outside a 5′ frame's centre. SkyBlink centres it on its Gaia DR3 position propagated to the survey era; the same propagation powers the Gaia overlay, so reference stars land on their epoch-correct positions in every frame.</li>
+    </ol>
+  </section>
+
+  <section class="panel-section">
+    <h2>The Two-Epoch Check</h2>
+    <p>A candidate mover is promoted only if it (1) appears in both epochs, shifted
+    consistently; (2) is <b>not</b> a known Gaia star at the new position, with Gaia
+    positions proper-motion propagated to the epoch; and (3) survives the difference
+    view as a clean dipole. Cosmic rays, ghosts and saturation artefacts fail at least
+    one test by construction. Full case treatment on the
+    <a href="cases.html">Case Files page</a>.</p>
+  </section>
+
+  <section class="panel-section">
+    <h2>Relation to WiseView</h2>
+    <p>The challenge points builders at WiseView, the established WISE blink tool, and
+    SkyBlink deliberately follows its proven interaction grammar — blink interval,
+    epoch stepping, difference imaging, percentile stretch — while differing where the
+    data differs: SPHEREx instead of WISE, 102 bands across six detectors instead of
+    two, DR1 + QR3 multi-epoch sets up to a year apart, and a Gaia overlay propagated
+    per epoch. Where WiseView helped us, we say so.</p>
+  </section>
+
+  <section class="panel-section">
+    <h2>Stated limits</h2>
+    <ol class="steps">
+      <li>WISE 0855 is intrinsically near-invisible below ~3 µm; its short-band frames are shown as honest non-detections, not enhanced into a “signal”.</li>
+      <li>Barnard's Star saturates its core in SPHEREx exposures; centroiding uses the unsaturated wings, which is why Case 3 quotes arcsecond-level tolerances.</li>
+      <li>Band fluxes are aperture sums on rendered frames — indicative, not a calibrated spectrum; the per-pixel spectral WCS route is the documented next step.</li>
+      <li>The pre-loaded site covers the five official targets plus the 3I/ATLAS case; arbitrary-coordinate rendering runs on the same pipeline in the project repository's API service.</li>
+    </ol>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>SkyBlink · Team Sohan Halwa · NASA Space Apps 2026</span>
+  <span class="foot-links"><a href="targets.html">Targets</a> · <a href="cases.html">Case Files</a> · <a href="methods.html">Methods</a> · <a href="data.html">Data &amp; credits</a></span>
+  <span class="mono" id="foot-status">static cache mode</span>
+</footer>
+
+<script src="cache-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

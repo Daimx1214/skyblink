@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data &amp; Resources — SkyBlink</title>
+<meta name="description" content="Every data source and resource SkyBlink uses: SPHEREx via IRSA, ESA Gaia, SIMBAD, SkyBoT, Aladin Lite, WiseView, NEOSSat, and the open-source Astropy stack.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("skyblink-theme")||"dark"}catch(e){document.documentElement.dataset.theme="dark"}</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="SkyBlink home">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">SkyBlink</span>
+  </a>
+  <form id="search-form" class="search" role="search">
+    <input id="search-input" type="text" autocomplete="off" spellcheck="false"
+      placeholder="Coordinates or object name… try Barnard's Star" aria-label="Coordinates or object name">
+    <button type="submit" class="go">GO</button>
+  </form>
+  <nav class="topnav">
+    <a href="index.html">Home</a>
+    <a href="targets.html">Targets</a>
+    <a href="cases.html">Case Files</a>
+    <a href="methods.html">Methods</a>
+    <a href="data.html" class="active">Data</a>
+  </nav>
+  <button id="theme-btn" class="theme-btn" type="button" aria-label="Switch light / dark theme" title="Light / dark theme">☀️</button>
+</header>
+
+<main>
+  <section class="page-hero">
+    <h1>Data &amp; resources</h1>
+    <p class="lede">SkyBlink stands entirely on public archives and open tools. Every source
+    below is one we actually used, with what we used it for. All imagery on this site is a
+    real archive product — nothing is simulated, and no frame is AI-generated.</p>
+  </section>
+
+  <section class="panel-section">
+    <h2>The challenge's eight resources — and how each was used</h2>
+    <table class="data-table">
+      <thead><tr><th>Resource</th><th>What it is</th><th>How SkyBlink used it</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://irsa.ipac.caltech.edu/data/SPHEREx/" target="_blank" rel="noopener">IRSA SPHEREx archive</a></td><td>The mission archive: Level-2 images, SIA/TAP services, release docs</td><td>The data itself — every frame, epoch date, quality flag and the 3I/ATLAS observation table</td></tr>
+        <tr><td>SPHEREx tutorial notebooks (IRSA)</td><td>Official worked examples for SPHEREx data, linked from the IRSA SPHEREx pages</td><td>The cutout recipe, spectral-WCS pattern and photometry approach our pipeline follows</td></tr>
+        <tr><td><a href="http://byw.tools/wiseview" target="_blank" rel="noopener">WiseView</a></td><td>The established WISE blink comparator (Caselden et al.)</td><td>The interaction model we studied and adapted — blink interval, epoch stepping, difference imaging (see Methods)</td></tr>
+        <tr><td><a href="https://mast.stsci.edu" target="_blank" rel="noopener">Gaia at MAST</a> / <a href="https://gea.esac.esa.int/archive/" target="_blank" rel="noopener">ESA Gaia archive</a></td><td>Gaia DR3 astrometry: positions, proper motions</td><td>Reference stars, per-epoch overlay, Barnard's Star centring and the Case 3 measurement baseline</td></tr>
+        <tr><td>CSA NEOSSat</td><td>Canada's asteroid-tracking microsatellite</td><td>Studied as the moving-object counterpart archive; its tracking case informs the Case Files' mover methodology</td></tr>
+        <tr><td><a href="https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca" target="_blank" rel="noopener">CADC NEOSSat community archive</a></td><td>NEOSSat data access via CADC</td><td>Access route evaluated for asteroid-frame blinking alongside SPHEREx</td></tr>
+        <tr><td><a href="https://github.com/CanadianSpaceAgency/NEOSSat-data-tutorial" target="_blank" rel="noopener">NEOSSat data tutorial</a></td><td>CSA's worked NEOSSat examples</td><td>Reference for handling a second survey's FITS conventions in the same blink framework</td></tr>
+        <tr><td><a href="https://irsa.ipac.caltech.edu/data/SPHEREx/docs/comet3iatlas/index.html" target="_blank" rel="noopener">IRSA 3I/ATLAS page</a></td><td>SPHEREx's observations of the interstellar comet</td><td>Case 1's backbone: the comet's position in each of its 259 exposures</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel-section">
+    <h2>Also in the stack</h2>
+    <table class="data-table">
+      <thead><tr><th>Source / tool</th><th>Role in SkyBlink</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://simbad.cds.unistra.fr" target="_blank" rel="noopener">SIMBAD (CDS)</a></td><td>Object-name resolution for the search box</td></tr>
+        <tr><td><a href="https://ssp.imcce.fr" target="_blank" rel="noopener">SkyBoT (IMCCE)</a></td><td>Solar-system object positions — the ephemeris cross-check behind Case 1</td></tr>
+        <tr><td><a href="https://aladin.cds.unistra.fr" target="_blank" rel="noopener">Aladin Lite (CDS)</a></td><td>The full-sky SPHEREx HiPS cube viewer embedded on every target dossier</td></tr>
+        <tr><td><a href="https://www.astropy.org" target="_blank" rel="noopener">Astropy · astroquery · reproject · photutils</a></td><td>The open-source Python astronomy stack the pipeline is built on</td></tr>
+        <tr><td>GitHub Pages</td><td>Free public hosting for this site</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel-section">
+    <h2>Credits &amp; disclosure</h2>
+    <p>SkyBlink was built by <b>Team Sohan Halwa</b> (Daim Ali &amp; Ali Abdullah) for the NASA
+    Space Apps Challenge 2026, challenge “Planet X and SPHEREx”, Universal Event.</p>
+    <p class="credits">SPHEREx data: NASA/JPL-Caltech and the SPHEREx team, via IRSA at IPAC.
+    Gaia data: ESA/Gaia/DPAC. WISE: NASA/JPL-Caltech. SIMBAD and Aladin: CDS, Université de
+    Strasbourg. SkyBoT: IMCCE. NEOSSat: Canadian Space Agency / CADC. This project is not
+    affiliated with or endorsed by NASA, and uses no NASA logos or branding.</p>
+    <p class="credits">AI disclosure: AI assistants were used for research, planning and code
+    drafting during this hackathon, under the team's direction. All data shown are real
+    archive products; nothing here is simulated.</p>
+    <p class="credits">Code: MIT License — see the project repository.</p>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>SkyBlink · Team Sohan Halwa · NASA Space Apps 2026</span>
+  <span class="foot-links"><a href="targets.html">Targets</a> · <a href="cases.html">Case Files</a> · <a href="methods.html">Methods</a> · <a href="data.html">Data &amp; credits</a></span>
+  <span class="mono" id="foot-status">static cache mode</span>
+</footer>
+
+<script src="cache-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -31,8 +31,9 @@ const $ = (s) => document.querySelector(s);
 
 const state = {
   target: TARGETS[0], manifest: null, idx: 0, playing: false,
-  timer: null, mode: "blink", imgCache: new Map(),
+  timer: null, mode: "blink", imgCache: new Map(), gaiaOn: false,
 };
+const HAS_EXPLORER = !!document.querySelector("#frame-a");
 
 /* ---------- target cards ---------- */
 function buildCards() {
@@ -43,7 +44,10 @@ function buildCards() {
     b.dataset.slug = t.slug;
     b.innerHTML = `<div class="kind">${t.kind}</div><h3>${t.name}</h3>
       <p>${t.blurb}</p><div class="tstatus mono" data-status>checking cache…</div>`;
-    b.addEventListener("click", () => loadTarget(t.slug, true));
+    b.addEventListener("click", () => {
+      if (HAS_EXPLORER) loadTarget(t.slug, true);
+      else location.href = `target.html?t=${t.slug}`;
+    });
     grid.appendChild(b);
     const st = b.querySelector("[data-status]");
     if ((window.SKYBLINK_CACHE || {})[t.slug]) { st.textContent = "frames ready"; }
@@ -85,6 +89,13 @@ async function loadTarget(slug, scroll) {
   }
   buildTimeline();
   showFrame(0);
+  renderBandChart();
+  fillDetail();
+  try {
+    const u = new URL(location.href);
+    u.searchParams.set("t", slug);
+    history.replaceState(null, "", u);
+  } catch (e) {}
   if (scroll) $("#explorer").scrollIntoView({ behavior: "smooth" });
 }
 
@@ -130,9 +141,12 @@ async function showFrame(i) {
     <div><dt>Release</dt><dd>${f.release}</dd></div>
     <div><dt>Observed</dt><dd>${f.date}</dd></div>
     <div><dt>Detector</dt><dd>D${f.detector}</dd></div>
+    ${f.wave_um ? `<div><dt>Band</dt><dd>${f.wave_um[0]}–${f.wave_um[1]} µm</dd></div>` : ""}
     <div><dt>Observation</dt><dd>${f.obs_id}</dd></div>
+    ${f.clean_pct != null ? `<div><dt>Clean pixels</dt><dd>${f.clean_pct}%</dd></div>` : ""}
     <div><dt>Frames in set</dt><dd>${frames.length} epochs</dd></div>
     <div><dt>Stretch</dt><dd>asinh · shared</dd></div>`;
+  drawGaia();
   if (state.mode === "blink") {
     const a = $("#frame-a");
     a.src = frameURL(f);
@@ -176,6 +190,85 @@ async function renderDiff(fa, fb) {
     ctx.putImageData(out, 0, 0);
     cv.classList.remove("hidden");
   } catch (e) { /* frames not decodable yet */ }
+}
+
+/* ---------- Gaia overlay (ESA Gaia DR3, epoch 2016.0, PM-propagated) ---------- */
+function drawGaia() {
+  const cv = $("#gaia-canvas");
+  if (!cv) return;
+  const ctx = cv.getContext("2d");
+  const wrap = $("#frame-wrap");
+  const W = wrap.clientWidth || 520;
+  cv.width = W; cv.height = W;
+  ctx.clearRect(0, 0, W, W);
+  if (!state.gaiaOn || !state.manifest || !state.manifest.gaia ||
+      state.mode !== "blink") { cv.classList.add("hidden"); return; }
+  const f = state.manifest.frames[state.idx];
+  const yearFrac = Number(f.date.slice(0, 4)) + (Number(f.date.slice(5, 7)) - 0.5) / 12;
+  const dt = yearFrac - 2016.0;
+  const ra0 = state.manifest.ra, dec0 = state.manifest.dec;
+  const fovDeg = state.manifest.fov_arcmin / 60;
+  const cosD = Math.cos(dec0 * Math.PI / 180);
+  ctx.strokeStyle = "rgba(45,212,191,0.9)";
+  ctx.lineWidth = 1.4;
+  state.manifest.gaia.forEach((s) => {
+    const raP = s.ra + (s.pmra / 3.6e6) * dt / cosD;
+    const decP = s.dec + (s.pmdec / 3.6e6) * dt;
+    const fx = 0.5 - ((raP - ra0) * cosD) / fovDeg;
+    const fy = 0.5 - (decP - dec0) / fovDeg;
+    if (fx < 0 || fx > 1 || fy < 0 || fy > 1) return;
+    const r = Math.max(2.5, Math.min(9, 10 - (s.g - 10) * 0.75));
+    ctx.beginPath();
+    ctx.arc(fx * W, fy * W, r, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+  cv.classList.remove("hidden");
+}
+
+/* ---------- band chart (target detail page) ---------- */
+function renderBandChart() {
+  const el = $("#band-chart");
+  if (!el || !state.manifest) return;
+  const fr = state.manifest.frames.filter((f) => f.band_flux != null);
+  if (!fr.length) { el.innerHTML = ""; return; }
+  const max = Math.max(...fr.map((f) => Math.abs(f.band_flux))) || 1;
+  const bw = 58, gap = 34, H = 168, base = H - 50;
+  const width = fr.length * (bw + gap) + gap;
+  const bars = fr.map((f, i) => {
+    const h = Math.max(3, (Math.abs(f.band_flux) / max) * (base - 18));
+    const x = gap + i * (bw + gap), y = base - h;
+    return `<g>
+      <rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="5" fill="var(--d${f.detector})"></rect>
+      <text x="${x + bw / 2}" y="${base + 16}" text-anchor="middle" class="bc-x">D${f.detector}</text>
+      <text x="${x + bw / 2}" y="${base + 31}" text-anchor="middle" class="bc-x2">${f.wave_um ? f.wave_um[0] + "–" + f.wave_um[1] + " µm" : ""}</text>
+      <text x="${x + bw / 2}" y="${base + 45}" text-anchor="middle" class="bc-x2">${f.date}</text>
+    </g>`;
+  }).join("");
+  el.innerHTML = `<svg viewBox="0 0 ${width} ${H}" role="img" aria-label="Aperture flux per detector band">${bars}</svg>
+    <p class="fineprint">Aperture flux at the target position in each frame, normalised to the
+    brightest. Each bar is a different detector band <i>and</i> a different visit — SPHEREx
+    surveys a field with different detectors at different times — so read this as the
+    target's band-by-band presence, not a calibrated spectrum.</p>`;
+}
+
+/* ---------- target detail fill (target.html) ---------- */
+function fillDetail() {
+  const story = $("#target-story");
+  if (!story || !state.manifest) return;
+  const t = state.target, fr = state.manifest.frames;
+  const dets = [...new Set(fr.map((f) => "D" + f.detector))].join(", ");
+  const rels = [...new Set(fr.map((f) => f.release))].join(" + ");
+  story.innerHTML = `
+    <p>${t.look}</p>
+    <dl class="mono fact-grid">
+      <div><dt>Coordinates</dt><dd>RA ${t.ra.toFixed(4)}° · Dec ${t.dec >= 0 ? "+" : ""}${t.dec.toFixed(4)}°</dd></div>
+      <div><dt>Field of view</dt><dd>${t.fov} arcmin</dd></div>
+      <div><dt>Epochs</dt><dd>${fr.length} (${fr[0].date} → ${fr[fr.length - 1].date})</dd></div>
+      <div><dt>Releases</dt><dd>${rels}</dd></div>
+      <div><dt>Detectors</dt><dd>${dets}</dd></div>
+      <div><dt>Gaia stars in field</dt><dd>${(state.manifest.gaia || []).length}</dd></div>
+    </dl>`;
+  document.title = `${t.name} — SkyBlink`;
 }
 
 /* ---------- transport ---------- */
@@ -226,30 +319,54 @@ function handleSearch(qRaw) {
 }
 
 /* ---------- wire up ---------- */
-document.querySelectorAll(".mode-tabs button").forEach((b) => {
-  b.addEventListener("click", () => {
-    document.querySelectorAll(".mode-tabs button").forEach((x) => x.classList.remove("active"));
-    b.classList.add("active");
-    state.mode = b.dataset.mode;
-    if (state.manifest) showFrame(state.idx);
+if (HAS_EXPLORER) {
+  document.querySelectorAll(".mode-tabs button").forEach((b) => {
+    b.addEventListener("click", () => {
+      document.querySelectorAll(".mode-tabs button").forEach((x) => x.classList.remove("active"));
+      b.classList.add("active");
+      state.mode = b.dataset.mode;
+      if (state.manifest) showFrame(state.idx);
+    });
   });
-});
-$("#btn-play").addEventListener("click", togglePlay);
-$("#btn-prev").addEventListener("click", () => { stopPlay(); if (state.manifest) showFrame(state.idx - 1); });
-$("#btn-next").addEventListener("click", () => { stopPlay(); if (state.manifest) showFrame(state.idx + 1); });
-$("#search-form").addEventListener("submit", (e) => { e.preventDefault(); handleSearch($("#search-input").value); });
+  $("#btn-play").addEventListener("click", togglePlay);
+  $("#btn-prev").addEventListener("click", () => { stopPlay(); if (state.manifest) showFrame(state.idx - 1); });
+  $("#btn-next").addEventListener("click", () => { stopPlay(); if (state.manifest) showFrame(state.idx + 1); });
+  const gaiaBtn = $("#btn-gaia");
+  if (gaiaBtn) gaiaBtn.addEventListener("click", () => {
+    state.gaiaOn = !state.gaiaOn;
+    gaiaBtn.classList.toggle("on", state.gaiaOn);
+    drawGaia();
+  });
+  const shareBtn = $("#btn-share");
+  if (shareBtn) shareBtn.addEventListener("click", async () => {
+    const u = new URL(location.href);
+    u.searchParams.set("t", state.target.slug);
+    try { await navigator.clipboard.writeText(u.toString()); shareBtn.textContent = "Link copied ✓"; }
+    catch (e) { shareBtn.textContent = u.toString(); }
+    setTimeout(() => { shareBtn.textContent = "Share link"; }, 2200);
+  });
+  window.addEventListener("resize", drawGaia);
+}
+const searchForm = $("#search-form");
+if (searchForm) searchForm.addEventListener("submit", (e) => { e.preventDefault(); handleSearch($("#search-input").value); });
 
 // Light / dark theme (default dark; the star stage stays black in both)
 const themeBtn = $("#theme-btn");
-function paintThemeBtn() { themeBtn.textContent = document.documentElement.dataset.theme === "light" ? "🌙" : "☀️"; }
-themeBtn.addEventListener("click", () => {
-  const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
-  document.documentElement.dataset.theme = next;
-  try { localStorage.setItem("skyblink-theme", next); } catch (e) {}
+if (themeBtn) {
+  const paintThemeBtn = () => { themeBtn.textContent = document.documentElement.dataset.theme === "light" ? "🌙" : "☀️"; };
+  themeBtn.addEventListener("click", () => {
+    const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("skyblink-theme", next); } catch (e) {}
+    paintThemeBtn();
+  });
   paintThemeBtn();
-});
-paintThemeBtn();
+}
 
-if (API) $("#foot-status").textContent = "live backend connected";
-buildCards();
-loadTarget("barnards-star", false);
+if (API && $("#foot-status")) $("#foot-status").textContent = "live backend connected";
+if ($("#target-grid")) buildCards();
+if (HAS_EXPLORER) {
+  const params = new URLSearchParams(location.search);
+  const start = TARGETS.some((t) => t.slug === params.get("t")) ? params.get("t") : "barnards-star";
+  loadTarget(start, false);
+}

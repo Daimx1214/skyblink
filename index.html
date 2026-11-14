@@ -12,7 +12,7 @@
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="#top" aria-label="SkyBlink home">
+  <a class="brand" href="index.html" aria-label="SkyBlink home">
     <span class="brand-mark" aria-hidden="true"></span>
     <span class="brand-name">SkyBlink</span>
   </a>
@@ -22,9 +22,11 @@
     <button type="submit" class="go">GO</button>
   </form>
   <nav class="topnav">
-    <a href="#targets">Targets</a>
-    <a href="#cases">Case Files</a>
-    <a href="#about">About</a>
+    <a href="index.html" class="active">Home</a>
+    <a href="targets.html">Targets</a>
+    <a href="cases.html">Case Files</a>
+    <a href="methods.html">Methods</a>
+    <a href="data.html">Data</a>
   </nav>
   <button id="theme-btn" class="theme-btn" type="button" aria-label="Switch light / dark theme" title="Light / dark theme">☀️</button>
 </header>
@@ -61,6 +63,7 @@
           <img id="frame-a" alt="Earlier epoch image">
           <img id="frame-b" alt="Later epoch image" class="hidden">
           <canvas id="diff-canvas" class="hidden"></canvas>
+          <canvas id="gaia-canvas" class="hidden" aria-hidden="true"></canvas>
           <div class="crosshair" aria-hidden="true"></div>
           <div class="scalebar mono" aria-hidden="true">1 arcmin</div>
         </div>
@@ -80,6 +83,10 @@
         <label class="fps mono">speed
           <input id="fps" type="range" min="1" max="10" value="3">
         </label>
+      </div>
+      <div class="viewer-actions">
+        <button id="btn-gaia" class="pill-btn" type="button" title="Show ESA Gaia DR3 stars, proper-motion propagated to this epoch">Gaia overlay</button>
+        <button id="btn-share" class="pill-btn" type="button" title="Copy a link to this exact view">Share link</button>
       </div>
     </div>
 
@@ -105,12 +112,15 @@
   <section class="targets" id="targets">
     <h2>The five official test targets</h2>
     <p class="section-sub">NASA's challenge names five objects to test a tool like this against.
-    All five are pre-loaded — a first click never waits.</p>
+    All five are pre-loaded — a first click never waits.
+    <a href="targets.html">Full target dossiers →</a></p>
     <div class="target-grid" id="target-grid"></div>
   </section>
 
   <section class="cases" id="cases">
     <h2>Case Files — guided investigations</h2>
+    <p class="section-sub">Worked investigations with real measurements.
+    <a href="cases.html">Open the full case files →</a></p>
     <div class="case-grid">
       <article class="case-card hero-case">
         <div class="case-tag">CASE 1 · THE HERO</div>
@@ -164,6 +174,7 @@
 
 <footer class="foot">
   <span>SkyBlink · Team Sohan Halwa · NASA Space Apps 2026</span>
+  <span class="foot-links"><a href="targets.html">Targets</a> · <a href="cases.html">Case Files</a> · <a href="methods.html">Methods</a> · <a href="data.html">Data &amp; credits</a></span>
   <span class="mono" id="foot-status">static cache mode</span>
 </footer>
 
