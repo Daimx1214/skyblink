@@ -38,7 +38,7 @@ Six pages, one job: show how the sky changes.
 - **Case Files** — guided investigations: interstellar comet **3I/ATLAS** between
   its August and December 2025 visits; the **Two-Epoch Check** candidate-vetting
   method; and a **measured proper-motion case** — Barnard's Star centroided in
-  all five epochs against Gaia's prediction (offsets 1.3–7.1″, i.e. 0.4–2.3
+  all five epochs against Gaia's prediction (offsets 1.3–7.4″, i.e. 0.4–2.4
   rendered pixels, with the scatter's likeliest confound stated).
 - **Methods & Data pages** — the full pipeline, two pipeline mistakes we caught
   and fixed (a south-up rendering bug; a 4.4′ stale target centre), the stated
