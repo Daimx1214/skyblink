@@ -71,7 +71,7 @@ tutorial notebooks — see `docs/METHODS.md`):
 
 ## Demo & source
 
-- **Demo video (29 s):** `skyblink-demo.mp4` in this repo.
+- **Demo video (29 s):** [Watch on Google Drive](https://drive.google.com/file/d/15Kzl2TC1TY-ssvGV4cXGv0QP_1gZgAI_/view?usp=drivesdk) · also `skyblink-demo.mp4` in this repo.
 - **Full source:** the pipeline (`scripts/`), API service (`services/`), docs
   (`docs/`) and target list (`data/targets.yaml`) are browsable in this repo;
   `skyblink-source.zip` bundles the same tree as one archive. The website itself
