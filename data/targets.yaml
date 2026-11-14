@@ -1,0 +1,58 @@
+# The five official test targets (NASA Space Apps 2026, Challenge 12)
+# Coordinates J2000, degrees. Verified against the official challenge page
+# (WISE 0855 coords are printed on the page itself) + EpochLens research table.
+targets:
+  - slug: barnards-star
+    name: "Barnard's Star"
+    # Position propagated to epoch 2025.6 from Gaia DR3 (source
+    # 4472832130942575872; pmra -801.6, pmdec +10362.4 mas/yr). The commonly
+    # listed J2000 position (269.4521, +4.6934) is ~4.4 arcmin stale - the
+    # star has moved out of a 5-arcmin frame centred there.
+    ra: 269.4464
+    dec: 4.7671
+    kind: proper-motion
+    pm_arcsec_yr: 10.4
+    default_fov_arcmin: 5
+    default_detectors: [1, 2, 3]
+    stretch: asinh
+    look_for: "The fastest-moving star in the sky. Blink: it creeps. Difference mode: a blue/red dipole. Gaia arrow shows where it should go - the Motion drawer compares measured vs predicted shift."
+  - slug: wise-0855
+    name: "WISE 0855"
+    ra: 133.7951
+    dec: -7.2451
+    kind: proper-motion
+    pm_arcsec_yr: 8.1
+    default_fov_arcmin: 3
+    default_detectors: [5, 6]
+    stretch: asinh
+    look_for: "The coldest known brown dwarf (~250 K). Invisible below 3 um, faint at 4-5 um - that is why only detectors D5-D6 are selected. Per-detector stacking is ON."
+  - slug: epsilon-indi-b
+    name: "Epsilon Indi B"
+    ra: 331.0438
+    dec: -56.7828
+    kind: proper-motion
+    pm_arcsec_yr: 4.7
+    default_fov_arcmin: 5
+    default_detectors: [3, 4, 5, 6]
+    stretch: asinh
+    look_for: "A pair of brown dwarfs (Ba+Bb) orbiting the star Epsilon Indi A, ~24 arcmin away. Centred on B. Moves with the system; difference mode reveals it."
+  - slug: rw-aurigae
+    name: "RW Aurigae"
+    ra: 76.9565
+    dec: 30.4014
+    kind: variable
+    pm_arcsec_yr: null
+    default_fov_arcmin: 5
+    default_detectors: [1, 2, 3, 4, 5, 6]
+    stretch: asinh
+    look_for: "A young T-Tauri star with deep dust-dimming events: the blink pulses instead of shifting. Open the light curve - flux per epoch tells the story."
+  - slug: r-draconis
+    name: "R Draconis"
+    ra: 248.1675
+    dec: 66.7550
+    kind: variable
+    pm_arcsec_yr: null
+    default_fov_arcmin: 5
+    default_detectors: [1, 2, 3, 4, 5, 6]
+    stretch: asinh
+    look_for: "A Mira variable (period ~246 days) near the north ecliptic pole - the most-visited target in this list, so its light curve has the most points. Watch for saturation flags at maximum light."
