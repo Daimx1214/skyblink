@@ -41,19 +41,40 @@ def health():
 
 @app.get("/api/resolve")
 def resolve(q: str = Query(..., min_length=2)):
+    # Primary: SIMBAD via astroquery. Fallback: the CDS Sesame name resolver.
+    # (On 2026-11-15 SIMBAD's TAP capabilities endpoint returned 404 while
+    # Sesame stayed reachable via a mirror — a name lookup should not die
+    # with one service.) Both return J2000 coordinates.
     try:
         from astroquery.simbad import Simbad
         sim = Simbad()
         sim.add_votable_fields("ra", "dec")
         res = sim.query_object(q)
-        if res is None or len(res) == 0:
-            raise HTTPException(404, "object not found in SIMBAD")
-        row = res[0]
-        return {"name": q, "ra": float(row["ra"]), "dec": float(row["dec"])}
+        if res is not None and len(res) > 0:
+            row = res[0]
+            return {"name": q, "ra": float(row["ra"]), "dec": float(row["dec"]),
+                    "source": "SIMBAD"}
+    except Exception:
+        pass
+    try:
+        import re
+        import urllib.parse
+        import urllib.request
+        url = ("https://cds.unistra.fr/cgi-bin/nph-sesame/-oxp/~S?"
+               + urllib.parse.quote(q))
+        req = urllib.request.Request(url, headers={"User-Agent": "skyblink-api"})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            xml = r.read().decode("utf-8", "replace")
+        ra = re.search(r"<jradeg>([\d.\-]+)</jradeg>", xml)
+        dec = re.search(r"<jdedeg>([\d.\-]+)</jdedeg>", xml)
+        if ra and dec:
+            return {"name": q, "ra": float(ra.group(1)),
+                    "dec": float(dec.group(1)), "source": "Sesame (CDS)"}
+        raise HTTPException(404, "object not found in SIMBAD or Sesame")
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(502, f"SIMBAD lookup failed: {str(e)[:120]}")
+        raise HTTPException(502, f"name lookup failed: {str(e)[:120]}")
 
 
 @app.get("/api/frames")
