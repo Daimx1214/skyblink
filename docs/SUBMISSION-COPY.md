@@ -33,9 +33,9 @@ candidate must still be vetted by the Two-Epoch Check. The explorer is fully
 keyboard-operable, its difference palette is colour-blind-safe, and it runs on
 phones with no account and no tracking.
 
-**Demo:** (video ≤30 s — link after upload) · Backup: 7-slide deck.
+**Demo:** https://drive.google.com/file/d/15Kzl2TC1TY-ssvGV4cXGv0QP_1gZgAI_/view?usp=drivesdk (video, 29 s) · Direct-play mirror: https://daimx1214.github.io/skyblink/skyblink-demo.mp4 · Backup: 7-slide deck.
 
-**Live site:** (Pages URL) · **Code:** https://github.com/Daimx1214/skyblink
+**Live site:** https://daimx1214.github.io/skyblink/ · **Code:** https://github.com/Daimx1214/skyblink
 
 **Data & resources used:**
 - SPHEREx Level-2 images + IRSA SIA/TAP archive services (IRSA at IPAC,
