@@ -3,8 +3,10 @@
 
 Verified routes (NASA Space Apps 2026 build, 14 Nov):
 - SIA via astroquery Irsa.query_sia, collections spherex_dr1/_deep/_cube,
-  spherex_qr3/_deep. Observation dates come from SIA t_min (MJD), NOT the
-  FITS DATE header (processing time).
+  spherex_qr3/_deep. Observation dates are taken from the rendered exposure's
+  own FITS DATE-OBS header (the SIA cluster's first-row t_min proved WRONG
+  for 17 of 21 frames in the Nov 2026 build - it dates the cluster's earliest
+  row, not the picked frame; DATE-OBS always agrees with the OBSID week).
 - Cutout: append "?center={ra},{dec}d&size={deg}" to the file URI
   (the literal trailing "d" after dec is IRSA's own example format).
 - Wavelength is per-pixel (spectral WCS key "W"); there is no PIXSOLID
@@ -152,6 +154,7 @@ def render_frame(fits_path, twcs, shape):
         meta = {
             "detector": int(hdr.get("DETECTOR", 0) or 0),
             "obs_id": str(hdr.get("OBSID", "")),
+            "date_obs": str(hdr.get("DATE-OBS", "")),
         }
         src_wcs = WCS(hdr)
     arr, _ = reproject_interp((img, src_wcs), twcs, shape_out=shape)
@@ -197,7 +200,12 @@ def build_frames(ra, dec, fov_arcmin, outdir, detector=2):
         url = cutout_url(str(row["access_url"]), ra, dec, size_deg)
         path = fetch_cutout(url)
         arr, meta = render_frame(path, twcs, shape)
-        picked.append({**g, **meta, "center_dist_deg": float(row["dist_deg"])})
+        pick = {**g, **meta, "center_dist_deg": float(row["dist_deg"])}
+        if meta.get("date_obs"):
+            # The frame's own DATE-OBS outranks the cluster's first-row t_min.
+            pick["date"] = meta["date_obs"][0:10]
+            pick["mjd"] = Time(meta["date_obs"]).mjd
+        picked.append(pick)
         arrays.append(arr)
     if not arrays:
         return {"ok": False, "reason": "no epoch frame contains the target"}

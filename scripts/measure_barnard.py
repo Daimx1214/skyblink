@@ -12,8 +12,44 @@ import sys
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from enrich import obsid_map  # noqa: E402
+from astropy.io import fits  # noqa: E402
+from astropy.time import Time  # noqa: E402
+from astropy.wcs import WCS  # noqa: E402
+from astropy.coordinates import SkyCoord  # noqa: E402
+import astropy.units as u  # noqa: E402
+from enrich import FITS_CACHE  # noqa: E402
 from pipeline import render_frame, target_wcs  # noqa: E402
+
+
+def obsid_map_centred(ra, dec):
+    """OBSID -> cutout path, using only full archive MEFs (with a FLAGS
+    plane) and preferring the cutout centred on the target. (The shared
+    enrich.obsid_map is last-file-wins over every cached FITS, including
+    partial S3 header fetches - that once silently broke this script.)"""
+    from collections import defaultdict
+    d = defaultdict(list)
+    for f in os.listdir(FITS_CACHE):
+        p = os.path.join(FITS_CACHE, f)
+        if not f.endswith(".fits"):
+            continue
+        try:
+            with fits.open(p) as h:
+                if "FLAGS" not in [x.name for x in h]:
+                    continue
+                oid = h["IMAGE"].header.get("OBSID")
+                if oid:
+                    d[str(oid).strip()].append(p)
+        except Exception:
+            continue
+    target = SkyCoord(ra, dec, unit="deg")
+
+    def cdist(p):
+        with fits.open(p) as h:
+            w = WCS(h["IMAGE"].header, naxis=2)
+            ny, nx = h["IMAGE"].data.shape
+            return target.separation(w.pixel_to_world(nx / 2, ny / 2)).to(u.arcmin).value
+
+    return {k: min(v, key=cdist) for k, v in d.items()}
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RA0, DEC0 = 269.44850, 4.73942
@@ -47,11 +83,11 @@ def centroid_near(arr, px, py, box=7, rad=5):
 def main():
     with open(os.path.join(ROOT, "apps/web/cache/barnards-star/manifest.json")) as f:
         man = json.load(f)
-    omap = obsid_map()
+    omap = obsid_map_centred(man["ra"], man["dec"])
     twcs, shape = target_wcs(man["ra"], man["dec"], man["fov_arcmin"])
     rows = []
     for fr in man["frames"]:
-        year = int(fr["date"][:4]) + (int(fr["date"][5:7]) - 0.5) / 12
+        year = Time(fr["date"]).decimalyear
         ra_s, dec_s = propagate(year)
         px, py = twcs.world_to_pixel_values(ra_s, dec_s)
         arr, _ = render_frame(omap[fr["obs_id"]], twcs, shape)
