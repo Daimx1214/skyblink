@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SkyBlink — watch the sky change | SPHEREx blink comparator</title>
+<meta name="description" content="SkyBlink is a public web tool that lets anyone enter a patch of sky and watch it change over time in NASA SPHEREx survey images.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#top" aria-label="SkyBlink home">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">SkyBlink</span>
+  </a>
+  <form id="search-form" class="search" role="search">
+    <input id="search-input" type="text" autocomplete="off" spellcheck="false"
+      placeholder="Coordinates or object name… try Barnard's Star" aria-label="Coordinates or object name">
+    <button type="submit" class="go">GO</button>
+  </form>
+  <nav class="topnav">
+    <a href="#targets">Targets</a>
+    <a href="#cases">Case Files</a>
+    <a href="#about">About</a>
+  </nav>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <h1>The sky is not still.<br><span class="grad">Blink it, and see what moved.</span></h1>
+    <p class="lede">SkyBlink lines up real NASA <b>SPHEREx</b> survey images of the same patch of sky,
+    taken months apart, and flips between them — the way astronomers have hunted moving and
+    changing objects for a century. Pick a target below, or search any coordinates.</p>
+    <div class="hero-stats" id="hero-stats">
+      <span><b>102</b> infrared bands</span>
+      <span><b>2</b> epochs pre-loaded per target</span>
+      <span><b>0</b> accounts, installs or cost</span>
+    </div>
+  </section>
+
+  <section class="explorer" id="explorer" aria-label="Blink explorer">
+    <div class="viewer-card">
+      <div class="viewer-head">
+        <div>
+          <div class="viewer-title" id="viewer-title">Barnard's Star</div>
+          <div class="viewer-sub mono" id="viewer-sub">RA 269.4521° · Dec +4.6934° · FoV 5′</div>
+        </div>
+        <div class="mode-tabs" role="tablist" aria-label="View mode">
+          <button data-mode="blink" class="active">Blink</button>
+          <button data-mode="side">Side by side</button>
+          <button data-mode="diff">Difference</button>
+        </div>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="frame-wrap" id="frame-wrap">
+          <img id="frame-a" alt="Earlier epoch image">
+          <img id="frame-b" alt="Later epoch image" class="hidden">
+          <canvas id="diff-canvas" class="hidden"></canvas>
+          <div class="crosshair" aria-hidden="true"></div>
+          <div class="scalebar mono" aria-hidden="true">1 arcmin</div>
+        </div>
+        <div class="side-pair hidden" id="side-pair">
+          <figure><img id="side-a" alt="Earlier epoch"><figcaption class="mono" id="side-a-cap"></figcaption></figure>
+          <figure><img id="side-b" alt="Later epoch"><figcaption class="mono" id="side-b-cap"></figcaption></figure>
+        </div>
+      </div>
+
+      <div class="legend mono" id="legend">Loading frames…</div>
+
+      <div class="transport">
+        <button id="btn-prev" aria-label="Previous epoch">⏮</button>
+        <button id="btn-play" aria-label="Play or pause blink">▶</button>
+        <button id="btn-next" aria-label="Next epoch">⏭</button>
+        <div class="timeline" id="timeline" aria-label="Epoch timeline"></div>
+        <label class="fps mono">speed
+          <input id="fps" type="range" min="1" max="10" value="3">
+        </label>
+      </div>
+    </div>
+
+    <aside class="inspector">
+      <div class="insp-card">
+        <h3>What to look for</h3>
+        <p id="look-for">—</p>
+      </div>
+      <div class="insp-card">
+        <h3>Frame info</h3>
+        <dl class="mono" id="frame-info"></dl>
+        <p class="fineprint">Dates are observation dates from the archive query
+        (not file processing dates). All frames of a target share one grid and
+        one brightness stretch, so blinking shows the sky changing — not the scaling.</p>
+      </div>
+      <div class="insp-card">
+        <h3>Data freshness</h3>
+        <p id="freshness" class="mono">SPHEREx DR1 (surveys 1–2, reprocessed) + QR3 (surveys 3–4)</p>
+      </div>
+    </aside>
+  </section>
+
+  <section class="targets" id="targets">
+    <h2>The five official test targets</h2>
+    <p class="section-sub">NASA's challenge names five objects to test a tool like this against.
+    All five are pre-loaded — a first click never waits.</p>
+    <div class="target-grid" id="target-grid"></div>
+  </section>
+
+  <section class="cases" id="cases">
+    <h2>Case Files — guided investigations</h2>
+    <div class="case-grid">
+      <article class="case-card hero-case">
+        <div class="case-tag">CASE 1 · THE HERO</div>
+        <h3>The Visitor From Between the Stars</h3>
+        <p>Interstellar comet <b>3I/ATLAS</b> crossed the SPHEREx sky in August 2025 and again in
+        December 2025. Follow the case: find the visitor, check it against the star charts,
+        and measure how far it travelled.</p>
+        <p class="case-status mono" id="case1-status">Case data: being prepared from the IRSA 3I/ATLAS observation table.</p>
+      </article>
+      <article class="case-card">
+        <div class="case-tag">CASE 2</div>
+        <h3>The Two-Epoch Check</h3>
+        <p>Our named method for vetting a candidate mover: it must appear in <b>both</b> epochs,
+        shifted consistently; it must <b>not</b> be a known Gaia star sitting at the new position;
+        and it must survive the difference view. Anything less is a cosmic ray or a ghost.</p>
+      </article>
+      <article class="case-card">
+        <div class="case-tag">CASE 3</div>
+        <h3>The Star That Barely Moves</h3>
+        <p>Barnard's Star has the largest proper motion of any star — and at SPHEREx's
+        6.2-arcsecond pixels even it shifts by only a pixel or two per year. Case 3 is the
+        honest measurement case: centroid the star in each epoch and compare with Gaia's
+        prediction, error bars included.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="how">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li><b>Query.</b> The archive (IRSA) is searched for every SPHEREx observation of your patch of sky, in the current data releases.</li>
+      <li><b>Align.</b> Cutouts are reprojected onto one shared north-up grid, with one shared brightness stretch across all epochs.</li>
+      <li><b>Blink.</b> Frames flip in place. Stars stay still; movers jump, variables pulse, and artefacts fail the Two-Epoch Check.</li>
+    </ol>
+  </section>
+
+  <section class="about" id="about">
+    <h2>About &amp; data</h2>
+    <p>SkyBlink was built by <b>Team Sohan Halwa</b> (Daim Ali &amp; Ali Abdullah) for the
+    NASA Space Apps Challenge 2026, challenge “Planet X and SPHEREx”.</p>
+    <p class="credits">Data &amp; services: SPHEREx Level-2 images and the IRSA archive
+    (NASA/JPL-Caltech &amp; the SPHEREx team, via IRSA at IPAC) · ESA Gaia (DPAC) for the
+    reference star positions and proper motions · WISE (NASA/JPL-Caltech) · SIMBAD (CDS) for
+    name resolution · SkyBoT (IMCCE) for solar-system object positions · Aladin Lite (CDS)
+    technology for sky browsing. This project is not affiliated with or endorsed by NASA.</p>
+    <p class="credits">AI disclosure: AI assistants were used for research, planning and code
+    drafting during this hackathon, under the team's direction. All data shown are real
+    archive products; nothing here is simulated.</p>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>SkyBlink · Team Sohan Halwa · NASA Space Apps 2026</span>
+  <span class="mono" id="foot-status">static cache mode</span>
+</footer>
+
+<script src="cache-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
