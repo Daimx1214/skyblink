@@ -15,9 +15,10 @@ Barnard's Star, Epsilon Indi B, WISE 0855, RW Aurigae and R Draconis — are
 pre-loaded with per-target dossier pages: a blink explorer with Blink /
 Side-by-side / Difference modes, an ESA Gaia DR3 overlay proper-motion propagated
 to each epoch, per-frame data-quality (clean-pixel %) and wavelength band, a
-detector-band flux chart, and the field in the SPHEREx all-sky cube via Aladin
-Lite. Barnard's Star's dossier also assembles a real 102-band-style spectrum
-from 27 individual Level-2 exposures (0.84–4.79 µm): each point's wavelength
+detector-band flux chart, and a one-degree context render from a real survey
+exposure, with the SPHEREx all-sky cube linked in Aladin Lite. Barnard's
+Star's dossier also assembles a real spectrum from 29 individual Level-2
+exposures (27 distinct channels, 0.84–4.79 µm): each point's wavelength
 comes from that frame's own spectral WCS at the star's pixel, its flux from
 aperture photometry on the archive data. Guided Case Files follow interstellar comet 3I/ATLAS between its August
 and December 2025 visits, document the Two-Epoch Check, and present a measured
