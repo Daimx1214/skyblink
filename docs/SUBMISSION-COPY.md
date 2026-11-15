@@ -23,6 +23,7 @@ tracked.
 
 **Project Demonstration (link field):**
 https://drive.google.com/file/d/15Kzl2TC1TY-ssvGV4cXGv0QP_1gZgAI_/view?usp=drivesdk
+Backup if the video is ever rejected: the 7-slide deck at docs/skyblink-deck.pptx in the repo (built by scripts/make_deck.py from the project's own data).
 
 **Project (link field):**
 https://daimx1214.github.io/skyblink/
