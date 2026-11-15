@@ -545,7 +545,19 @@ function runLiveSearch(ra, dec, label, scroll = true) {
 function handleSearch(qRaw) {
   const q = qRaw.trim().toLowerCase();
   if (!q) return;
-  const hit = TARGETS.find((t) => t.name.toLowerCase().includes(q) || q.includes(t.name.toLowerCase().split(" ")[0]));
+  // Match a pre-loaded target only on a real name signal: the full name,
+  // a distinctive name word (3+ letters, whole word), or a query of 4+
+  // characters contained in the name. (The old first-word test matched
+  // the letter "r" of "R Draconis" inside any query containing an r.)
+  const norm = (s) => s.toLowerCase().replace(/[’']/g, "").replace(/\s+/g, " ").trim();
+  const qn = norm(qRaw);
+  const hit = TARGETS.find((t) => {
+    const tn = norm(t.name);
+    if (tn === qn || qn.startsWith(tn)) return true;
+    if (qn.length >= 4 && tn.includes(qn)) return true;
+    return tn.split(" ").some((w) => w.length >= 3 && w !== "star"
+      && qn.split(" ").includes(w));
+  });
   if (hit) { loadTarget(hit.slug, true); return; }
   const m = q.match(/(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)/);
   if (m) { runLiveSearch(parseFloat(m[1]), parseFloat(m[2])); return; }
