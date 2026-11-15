@@ -574,6 +574,7 @@ function fetchJSON(url, timeoutMs, statusText) {
     .finally(() => { clearInterval(timer); clearTimeout(killer); });
 }
 
+const RESOLVE_SLOW_MSG = "The name lookup did not answer in time. The lookup services SkyBlink uses (SIMBAD and Sesame, at CDS) are responding slowly right now. The five pre-loaded targets below open instantly; coordinates like 269.4521, 4.6934 skip the lookup entirely; and the name search is worth another try later.";
 const ARCHIVE_SLOW_MSG = "The archive did not answer in time. IRSA, the NASA archive SkyBlink queries, is responding slowly or not at all right now; the five pre-loaded targets below open instantly. Please try the live search again later.";
 
 function runLiveSearch(ra, dec, label, scroll = true) {
@@ -649,7 +650,7 @@ function handleSearch(qRaw) {
       .then((res) => {
         if (res && res.ra != null) runLiveSearch(res.ra, res.dec, res.name || qRaw.trim());
         else $("#legend").textContent = `“${qRaw.trim()}” isn't one of the five pre-loaded targets, and the name lookup found nothing. Try coordinates like 269.4521, 4.6934.`;
-      }).catch(() => { $("#legend").textContent = ARCHIVE_SLOW_MSG; });
+      }).catch(() => { $("#legend").textContent = RESOLVE_SLOW_MSG; });
     return;
   }
   $("#legend").textContent = `“${qRaw.trim()}” isn't one of the five pre-loaded targets. Try a target name, or coordinates like 269.4521, 4.6934.`;
