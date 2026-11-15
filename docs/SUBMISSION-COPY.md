@@ -17,8 +17,8 @@ Side-by-side / Difference modes, an ESA Gaia DR3 overlay proper-motion propagate
 to each epoch, per-frame data-quality (clean-pixel %) and wavelength band, a
 detector-band flux chart, and a one-degree context render from a real survey
 exposure, with the SPHEREx all-sky cube linked in Aladin Lite. Barnard's
-Star's dossier also assembles a real spectrum from 29 individual Level-2
-exposures (27 distinct channels, 0.84–4.79 µm): each point's wavelength
+Star's dossier also assembles a real spectrum from 91 individual Level-2
+exposures (74 distinct channels, 0.80–4.89 µm): each point's wavelength
 comes from that frame's own spectral WCS at the star's pixel, its flux from
 aperture photometry on the archive data. Guided Case Files follow interstellar comet 3I/ATLAS between its August
 and December 2025 visits, document the Two-Epoch Check, and present a measured
