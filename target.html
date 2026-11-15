@@ -145,45 +145,48 @@
 <script src="cache-data.js"></script>
 <script>window.SKYBLINK_API="https://skyblink-lyart.vercel.app";</script>
 <script src="app.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/aladin-lite@3.8.2/dist/aladin.js"></script>
-<script>
-  (function () {
-    const box = document.getElementById("aladin-lite-div");
+<script type="module">
+  const box = document.getElementById("aladin-lite-div");
+  function fallback(msg) {
     if (!box) return;
+    box.innerHTML = '<div class="aladin-fallback"><p>' + msg + '</p>'
+      + '<p><a href="https://aladin.cds.unistra.fr/AladinLite/" target="_blank" rel="noopener">'
+      + 'Open the same cube in the Aladin Lite app</a></p></div>';
+  }
+  if (box) {
     const slug = new URLSearchParams(location.search).get("t") || "barnards-star";
     const t = (typeof TARGETS !== "undefined" && TARGETS.find((x) => x.slug === slug))
       || { ra: 269.4464, dec: 4.7671 };
-    function fallback(msg) {
-      box.innerHTML = '<div class="aladin-fallback"><p>' + msg + '</p>'
-        + '<p><a href="https://aladin.cds.unistra.fr/AladinLite/" target="_blank" rel="noopener">'
-        + 'Open the same cube in the Aladin Lite app</a></p></div>';
-    }
     let gl2 = false;
     try { gl2 = !!document.createElement("canvas").getContext("webgl2"); } catch (e) { gl2 = false; }
     if (!gl2) {
       fallback("The Aladin Lite sky viewer needs WebGL2, which this browser could not start — the box stays empty here, but the dossier above is complete without it.");
-      return;
+    } else {
+      let A = null;
+      try {
+        A = (await import("https://cdn.jsdelivr.net/npm/aladin-lite@3.8.2/dist/aladin.js")).default;
+      } catch (e) { A = null; }
+      if (!A) {
+        fallback("The Aladin Lite library could not be loaded (network or CDN trouble) — the dossier above is complete without it.");
+      } else {
+        let started = false;
+        const timer = setTimeout(() => {
+          if (!started) fallback("The Aladin Lite viewer did not start in time — the CDS or IRSA service may be busy. Reloading the page usually fixes it.");
+        }, 25000);
+        A.init.then(() => {
+          started = true;
+          clearTimeout(timer);
+          A.aladin("#aladin-lite-div", {
+            survey: "https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube",
+            fov: 0.35, target: t.ra + " " + t.dec, showSettingsControl: false,
+          });
+        }).catch(() => {
+          clearTimeout(timer);
+          fallback("The Aladin Lite viewer failed to start — the dossier above is complete without it.");
+        });
+      }
     }
-    if (typeof A === "undefined") {
-      fallback("The Aladin Lite library could not be loaded (network or CDN trouble) — the dossier above is complete without it.");
-      return;
-    }
-    let started = false;
-    const timer = setTimeout(() => {
-      if (!started) fallback("The Aladin Lite viewer did not start in time — the CDS or IRSA service may be busy. Reloading the page usually fixes it.");
-    }, 25000);
-    A.init.then(() => {
-      started = true;
-      clearTimeout(timer);
-      A.aladin("#aladin-lite-div", {
-        survey: "https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube",
-        fov: 0.35, target: t.ra + " " + t.dec, showSettingsControl: false,
-      });
-    }).catch(() => {
-      clearTimeout(timer);
-      fallback("The Aladin Lite viewer failed to start — the dossier above is complete without it.");
-    });
-  })();
+  }
 </script>
 </body>
 </html>
