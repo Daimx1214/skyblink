@@ -568,7 +568,7 @@ function fetchJSON(url, timeoutMs, statusText) {
   const killer = setTimeout(() => ctl.abort(), timeoutMs);
   return fetch(url, { signal: ctl.signal })
     .then((r) => {
-      if (!r.ok) throw new Error(`http ${r.status}`);
+      if (!r.ok) { const e = new Error(`http ${r.status}`); e.status = r.status; throw e; }
       return r.json();
     })
     .finally(() => { clearInterval(timer); clearTimeout(killer); });
@@ -646,19 +646,26 @@ function handleSearch(qRaw) {
   if (API) {
     $("#legend").textContent = `Resolving “${qRaw.trim()}” with the backend…`;
     const resolveURL = `${API}/api/resolve?q=${encodeURIComponent(qRaw.trim())}`;
+    const notFound = () => { $("#legend").textContent = `“${qRaw.trim()}” isn't one of the five pre-loaded targets, and the name lookup found nothing. Try coordinates like 269.4521, 4.6934.`; };
     const onRes = (res) => {
       if (res && res.ra != null) runLiveSearch(res.ra, res.dec, res.name || qRaw.trim());
-      else $("#legend").textContent = `“${qRaw.trim()}” isn't one of the five pre-loaded targets, and the name lookup found nothing. Try coordinates like 269.4521, 4.6934.`;
+      else notFound();
     };
     fetchJSON(resolveURL, 20000, `Resolving “${qRaw.trim()}”…`)
       .then(onRes)
-      .catch(() => {
-        // One automatic retry: a cold backend instance or a slow minute at
-        // CDS can eat the first attempt; the second usually answers fast.
+      .catch((e) => {
+        // A 404 is an answer, not a failure: the name is simply unknown.
+        if (e && e.status === 404) { notFound(); return; }
+        // Anything else (timeout, network, 5xx) gets one automatic retry:
+        // a cold backend instance or a slow minute at CDS can eat the
+        // first attempt; the second usually answers fast.
         $("#legend").textContent = `The first lookup was slow, trying once more…`;
         fetchJSON(resolveURL, 20000, `Resolving “${qRaw.trim()}”…`)
           .then(onRes)
-          .catch(() => { $("#legend").textContent = RESOLVE_SLOW_MSG; });
+          .catch((e2) => {
+            if (e2 && e2.status === 404) notFound();
+            else $("#legend").textContent = RESOLVE_SLOW_MSG;
+          });
       });
     return;
   }
