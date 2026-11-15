@@ -52,6 +52,7 @@ def resolve(q: str = Query(..., min_length=2)):
     try:
         from astroquery.simbad import Simbad
         sim = Simbad()
+        sim.TIMEOUT = 8  # seconds; the front end gives the lookup 20 s in total
         sim.add_votable_fields("ra", "dec")
         res = sim.query_object(q)
         if res is not None and len(res) > 0:
@@ -67,7 +68,7 @@ def resolve(q: str = Query(..., min_length=2)):
         url = ("https://cds.unistra.fr/cgi-bin/nph-sesame/-oxp/~S?"
                + urllib.parse.quote(q))
         req = urllib.request.Request(url, headers={"User-Agent": "skyblink-api"})
-        with urllib.request.urlopen(req, timeout=20) as r:
+        with urllib.request.urlopen(req, timeout=8) as r:
             xml = r.read().decode("utf-8", "replace")
         ra = re.search(r"<jradeg>([\d.\-]+)</jradeg>", xml)
         dec = re.search(r"<jdedeg>([\d.\-]+)</jdedeg>", xml)
