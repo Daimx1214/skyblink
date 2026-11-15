@@ -134,13 +134,15 @@
     The gold ring marks the target; the small teal box is the 5-arcmin field the
     blink explorer above is showing you.</p>
     <div class="context-wrap"><img id="context-img" alt="One-degree-wide SPHEREx context field around this target, rendered from a real Level-2 exposure"></div>
-    <p style="margin:14px 0 4px"><a id="aladin-link" class="btn" href="https://aladin.cds.unistra.fr/AladinLite/" target="_blank" rel="noopener">Open this field in Aladin Lite (full SPHEREx cube)</a></p>
+    <p style="margin:14px 0 4px"><a id="aladin-link" class="btn" href="https://aladin.cds.unistra.fr/AladinLite/" target="_blank" rel="noopener">Open the Aladin Lite app</a></p>
     <p class="fineprint">Context render: SPHEREx DR1/QR3 Level-2 data via IRSA (NASA/IPAC).
-    The button above opens this same field in the Aladin Lite app (CDS, Université de
-    Strasbourg) with the SPHEREx all-sky HiPS cube loaded, for the fully interactive
-    cube: pan, zoom and all 102 bands. An embedded Aladin viewer sat here earlier; its
-    tiles did not start reliably in several browsers, so the dossier carries this
-    guaranteed render instead.</p>
+    For the fully interactive cube (pan, zoom, all 102 bands), open the Aladin Lite app
+    (CDS, Université de Strasbourg) with the button above, add the SPHEREx HiPS cube at
+    <span class="mono">https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube</span>,
+    and centre it on <span id="aladin-coords" class="mono">this target</span>. The app does
+    not accept pre-aimed links, and an embedded Aladin viewer sat here earlier whose tiles
+    did not start reliably in several browsers, so the dossier carries this guaranteed
+    render instead, with the app one click away.</p>
   </section>
 </main>
 
@@ -165,13 +167,11 @@
       "rw-aurigae": [76.9565, 30.4014],
       "r-draconis": [248.1675, 66.7550],
     };
-    const link = document.getElementById("aladin-link");
+    const coordsEl = document.getElementById("aladin-coords");
     const c = COORDS[slug];
-    if (link && c) {
-      const hips = encodeURIComponent("https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube");
-      link.href = "https://aladin.cds.unistra.fr/AladinLite/?target=" +
-        encodeURIComponent(c[0] + " " + (c[1] >= 0 ? "+" : "") + c[1]) +
-        "&fov=1&survey=" + hips;
+    if (coordsEl && c) {
+      coordsEl.textContent = "RA " + c[0].toFixed(4) + "°, Dec " +
+        (c[1] >= 0 ? "+" : "") + c[1].toFixed(4) + "°";
     }
   })();
 </script>

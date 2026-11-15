@@ -39,7 +39,7 @@ Six pages, one job: show how the sky changes.
   assembled exposure-by-exposure from the archive (the channels the visits have
   actually sampled at that position, counted honestly on the page), and the field
   inside the SPHEREx survey — a one-degree context render from a real
-  exposure, with the all-sky cube linked in **Aladin Lite**.
+  exposure, with the **Aladin Lite** app linked for the interactive cube.
 - **Shareable views** — every target lives at its own URL (`target.html?t=…`);
   live coordinate views carry their coordinates and field of view
   (`?ra&dec&fov`), and a Share link button copies the current view. The **FoV
