@@ -104,6 +104,60 @@ def frames(ra: float, dec: float, fov: float = 5.0, det: int = 2):
     return man
 
 
+@app.get("/api/spectrum")
+def spectrum(ra: float, dec: float):
+    """On-the-fly spectrum: aperture photometry at the position in every
+    archive exposure covering it, median-binned by channel. Budget-capped
+    (40 fetches / ~4 min) so a serverless invocation stays within limits;
+    'complete' says whether the whole archive set was sampled."""
+    if not (-90 <= dec <= 90 and 0 <= ra < 360):
+        raise HTTPException(422, "coordinates out of range")
+    key = hashlib.sha256(f"spec,{ra:.4f},{dec:.4f}".encode()).hexdigest()[:16]
+    path = os.path.join(LIVE_CACHE, f"spectrum-{key}.json")
+    if os.path.exists(path):
+        with open(path) as f:
+            return json.load(f)
+    from pipeline import sia_query
+    from spectrum_lib import bin_points, frame_spectrum_point, s3_pass, sia_rows_to_s3
+    try:
+        res = sia_query(ra, dec, 10)
+    except Exception as e:  # upstream archive outage etc.
+        raise HTTPException(502, f"archive query failed: {type(e).__name__}: {str(e)[:160]}")
+    rows = sia_rows_to_s3(res)
+    pts = []
+    if rows:
+        pts = s3_pass(ra, dec, rows, max_fetches=40, deadline_s=240,
+                      log=lambda m: None)
+        complete = len(rows) <= 40
+    else:
+        from pipeline import cutout_url, fetch_cutout
+        n = 0
+        for r in res:
+            if float(r["dist_deg"]) > 1.2 or n >= 40:
+                continue
+            try:
+                p = fetch_cutout(cutout_url(str(r["access_url"]), ra, dec, 0.05))
+                n += 1
+                got = frame_spectrum_point(p, ra, dec)
+                if got:
+                    pts.append(got)
+            except Exception:  # noqa: BLE001
+                continue
+        complete = n < 40
+    waves, fluxes = bin_points(pts)
+    if len(waves) < 6:
+        raise HTTPException(404, "too few spectral channels sampled at this position")
+    payload = {"ok": True, "ra": ra, "dec": dec, "wave_um": waves,
+               "flux_mjy": fluxes, "exposures": len(pts),
+               "channels": len(waves), "complete": complete}
+    try:
+        with open(path, "w") as f:
+            json.dump(payload, f)
+    except OSError:
+        pass
+    return payload
+
+
 @app.get("/api/file/{key}/{name}")
 def file(key: str, name: str):
     path = os.path.join(LIVE_CACHE, key, os.path.basename(name))
