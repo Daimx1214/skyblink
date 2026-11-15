@@ -128,11 +128,19 @@
   </section>
 
   <section class="panel-section">
-    <h2>Full-sky context — SPHEREx all-sky cube in Aladin Lite</h2>
-    <p class="section-sub">The same sky in the IRSA SPHEREx HiPS all-sky cube (CDS Aladin Lite).
-    Zoom and switch cube frames to move through the 102 bands; the view opens on this target.</p>
-    <div class="aladin-wrap"><div id="aladin-lite-div"></div></div>
-    <p class="fineprint">Aladin Lite © CDS, Université de Strasbourg. HiPS cube: SPHEREx via IRSA.</p>
+    <h2>Full-sky context — this field in the SPHEREx survey</h2>
+    <p class="section-sub">One degree of sky around this target, rendered from a single real
+    SPHEREx Level-2 exposure — the same survey that fills the IRSA all-sky cube.
+    The gold ring marks the target; the small teal box is the 5-arcmin field the
+    blink explorer above is showing you.</p>
+    <div class="context-wrap"><img id="context-img" alt="One-degree-wide SPHEREx context field around this target, rendered from a real Level-2 exposure"></div>
+    <p class="fineprint">Context render: SPHEREx DR1/QR3 Level-2 data via IRSA (NASA/IPAC).
+    For the fully interactive cube — pan, zoom and all 102 bands — open it in the
+    <a href="https://aladin.cds.unistra.fr/AladinLite/" target="_blank" rel="noopener">Aladin Lite app</a>
+    (CDS, Université de Strasbourg) and add the HiPS cube at
+    <span class="mono">https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube</span>.
+    An embedded Aladin viewer sat here earlier; its tiles did not start reliably in
+    several browsers, so the dossier carries this guaranteed render instead.</p>
   </section>
 </main>
 
@@ -145,48 +153,12 @@
 <script src="cache-data.js"></script>
 <script>window.SKYBLINK_API="https://skyblink-lyart.vercel.app";</script>
 <script src="app.js"></script>
-<script type="module">
-  const box = document.getElementById("aladin-lite-div");
-  function fallback(msg) {
-    if (!box) return;
-    box.innerHTML = '<div class="aladin-fallback"><p>' + msg + '</p>'
-      + '<p><a href="https://aladin.cds.unistra.fr/AladinLite/" target="_blank" rel="noopener">'
-      + 'Open the same cube in the Aladin Lite app</a></p></div>';
-  }
-  if (box) {
+<script>
+  (function () {
     const slug = new URLSearchParams(location.search).get("t") || "barnards-star";
-    const t = (typeof TARGETS !== "undefined" && TARGETS.find((x) => x.slug === slug))
-      || { ra: 269.4464, dec: 4.7671 };
-    let gl2 = false;
-    try { gl2 = !!document.createElement("canvas").getContext("webgl2"); } catch (e) { gl2 = false; }
-    if (!gl2) {
-      fallback("The Aladin Lite sky viewer needs WebGL2, which this browser could not start — the box stays empty here, but the dossier above is complete without it.");
-    } else {
-      let A = null;
-      try {
-        A = (await import("https://cdn.jsdelivr.net/npm/aladin-lite@3.8.2/dist/aladin.js")).default;
-      } catch (e) { A = null; }
-      if (!A) {
-        fallback("The Aladin Lite library could not be loaded (network or CDN trouble) — the dossier above is complete without it.");
-      } else {
-        let started = false;
-        const timer = setTimeout(() => {
-          if (!started) fallback("The Aladin Lite viewer did not start in time — the CDS or IRSA service may be busy. Reloading the page usually fixes it.");
-        }, 25000);
-        A.init.then(() => {
-          started = true;
-          clearTimeout(timer);
-          A.aladin("#aladin-lite-div", {
-            survey: "https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube",
-            fov: 0.35, target: t.ra + " " + t.dec, showSettingsControl: false,
-          });
-        }).catch(() => {
-          clearTimeout(timer);
-          fallback("The Aladin Lite viewer failed to start — the dossier above is complete without it.");
-        });
-      }
-    }
-  }
+    const img = document.getElementById("context-img");
+    if (img) img.src = "cache/" + slug + "/context.jpg";
+  })();
 </script>
 </body>
 </html>
