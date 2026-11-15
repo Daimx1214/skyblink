@@ -63,7 +63,7 @@ A candidate moving/changing object is accepted only if it passes all three tests
   its visits placed on it, so each chart states how many channels it shows.
   The backend runs the same measurement on demand (`/api/spectrum`).
 - **Links carry the view.** Target views use `?t=<slug>`; live coordinate
-  views use `?ra&dec&fov`. The FoV control re-renders live at 3–20 arcmin.
+  views use `?ra&dec&fov`. The FoV control re-renders live at 3 or 5 arcmin (the two fields the free serverless backend renders reliably inside its time limit).
 - **Staying current.** `scripts/update_check.py` rebuilds each target's frame
   set from the live archive and diffs observation IDs against the cached
   manifest; a weekly scheduled run applies, re-enriches, re-bundles and
