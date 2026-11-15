@@ -3,7 +3,7 @@
 
 Endpoints
   GET /api/health                 -> {"ok": true}
-  GET /api/resolve?q=<name>       -> SIMBAD name resolution {name, ra, dec}
+  GET /api/resolve?q=<name>       -> Sesame/SIMBAD name resolution {name, ra, dec}
   GET /api/frames?ra&dec&fov&det  -> blink manifest for ANY coordinates;
                                      frames are rendered on first request by
                                      scripts/pipeline.py and cached on disk.
@@ -45,22 +45,13 @@ def health():
 
 @app.get("/api/resolve")
 def resolve(q: str = Query(..., min_length=2)):
-    # Primary: SIMBAD via astroquery. Fallback: the CDS Sesame name resolver.
-    # (On 2026-11-15 SIMBAD's TAP capabilities endpoint returned 404 while
-    # Sesame stayed reachable via a mirror — a name lookup should not die
-    # with one service.) Both return J2000 coordinates.
-    try:
-        from astroquery.simbad import Simbad
-        sim = Simbad()
-        sim.TIMEOUT = 8  # seconds; the front end gives the lookup 20 s in total
-        sim.add_votable_fields("ra", "dec")
-        res = sim.query_object(q)
-        if res is not None and len(res) > 0:
-            row = res[0]
-            return {"name": q, "ra": float(row["ra"]), "dec": float(row["dec"]),
-                    "source": "SIMBAD"}
-    except Exception:
-        pass
+    # Primary: the CDS Sesame name resolver (one fast HTTP GET). Fallback:
+    # SIMBAD via astroquery. Order swapped 2026-11-15 evening: measured live,
+    # Sesame answers real and bogus names in ~5 s, while SIMBAD's success
+    # path took ~89 s for a real name the same evening, far beyond the front
+    # end's 20 s budget. Each leg is capped at 8 s, so the worst case stays
+    # inside that budget. Both return J2000 coordinates.
+    sesame_error = None
     try:
         import re
         import urllib.parse
@@ -75,11 +66,23 @@ def resolve(q: str = Query(..., min_length=2)):
         if ra and dec:
             return {"name": q, "ra": float(ra.group(1)),
                     "dec": float(dec.group(1)), "source": "Sesame (CDS)"}
-        raise HTTPException(404, "object not found in SIMBAD or Sesame")
-    except HTTPException:
-        raise
     except Exception as e:
-        raise HTTPException(502, f"name lookup failed: {str(e)[:120]}")
+        sesame_error = e
+    try:
+        from astroquery.simbad import Simbad
+        sim = Simbad()
+        sim.TIMEOUT = 8  # seconds; the front end gives the lookup 20 s in total
+        sim.add_votable_fields("ra", "dec")
+        res = sim.query_object(q)
+        if res is not None and len(res) > 0:
+            row = res[0]
+            return {"name": q, "ra": float(row["ra"]), "dec": float(row["dec"]),
+                    "source": "SIMBAD"}
+    except Exception:
+        pass
+    if sesame_error is not None:
+        raise HTTPException(502, f"name lookup failed: {str(sesame_error)[:120]}")
+    raise HTTPException(404, "object not found in SIMBAD or Sesame")
 
 
 @app.get("/api/frames")
