@@ -574,7 +574,7 @@ function fetchJSON(url, timeoutMs, statusText) {
     .finally(() => { clearInterval(timer); clearTimeout(killer); });
 }
 
-const RESOLVE_SLOW_MSG = "The name lookup did not answer in time. The lookup services SkyBlink uses (SIMBAD and Sesame, at CDS) are responding slowly right now. The five pre-loaded targets below open instantly; coordinates like 269.4521, 4.6934 skip the lookup entirely; and the name search is worth another try later.";
+const RESOLVE_SLOW_MSG = "The name lookup did not answer in time. The lookup service SkyBlink uses (Sesame, at CDS) is responding slowly right now. The five pre-loaded targets below open instantly; coordinates like 269.4521, 4.6934 skip the lookup entirely; and the name search is worth another try later.";
 const ARCHIVE_SLOW_MSG = "The archive did not answer in time. IRSA, the NASA archive SkyBlink queries, is responding slowly or not at all right now; the five pre-loaded targets below open instantly. Please try the live search again later.";
 
 function runLiveSearch(ra, dec, label, scroll = true) {

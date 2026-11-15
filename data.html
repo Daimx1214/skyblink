@@ -11,7 +11,7 @@
 <meta property="og:description" content="Blink real SPHEREx survey epochs (DR1 + QR3): moving objects jump, variable stars pulse. Five official test targets, Gaia overlays, case files — no simulated data.">
 <meta property="og:url" content="https://daimx1214.github.io/skyblink/">
 <meta name="twitter:card" content="summary">
-<meta name="description" content="Every data source and resource SkyBlink uses: SPHEREx via IRSA, ESA Gaia, SIMBAD, SkyBoT, Aladin Lite, WiseView, NEOSSat, and the open-source Astropy stack.">
+<meta name="description" content="Every data source and resource SkyBlink uses: SPHEREx via IRSA, ESA Gaia, Sesame, SkyBoT, Aladin Lite, WiseView, NEOSSat, and the open-source Astropy stack.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script>try{document.documentElement.dataset.theme=localStorage.getItem("skyblink-theme")||"dark"}catch(e){document.documentElement.dataset.theme="dark"}</script>
@@ -68,7 +68,7 @@
     <table class="data-table">
       <thead><tr><th>Source / tool</th><th>Role in SkyBlink</th></tr></thead>
       <tbody>
-        <tr><td><a href="https://simbad.cds.unistra.fr" target="_blank" rel="noopener">SIMBAD (CDS)</a></td><td>Object-name resolution for the backend search (the deployed site pre-loads the five targets)</td></tr>
+        <tr><td><a href="https://cds.unistra.fr/cgi-bin/Sesame" target="_blank" rel="noopener">Sesame (CDS)</a></td><td>Object-name resolution for the backend search (Sesame queries SIMBAD, NED and VizieR itself; the deployed site pre-loads the five targets)</td></tr>
         <tr><td><a href="https://ssp.imcce.fr" target="_blank" rel="noopener">SkyBoT (IMCCE)</a></td><td>Solar-system object positions — the ephemeris cross-check behind Case 1</td></tr>
         <tr><td><a href="https://aladin.cds.unistra.fr/AladinLite/" target="_blank" rel="noopener">Aladin Lite (CDS)</a></td><td>The interactive viewer for the full-sky SPHEREx HiPS cube. Every target dossier links the app with a button under its one-degree context render, with the cube address and the target's coordinates printed next to it (the app accepts no pre-aimed links)</td></tr>
         <tr><td><a href="https://irsa.ipac.caltech.edu/Missions/wise.html" target="_blank" rel="noopener">AllWISE catalogue (NASA WISE, via IRSA)</a></td><td>The viewer's second overlay: WISE catalogue sources in each target field (W1 &lt; 17), drawn as catalogued at the WISE epoch (~2010)</td></tr>
@@ -92,7 +92,7 @@
     <p>SkyBlink was built by <b>Team Sohan Halwa</b> (Daim Ali &amp; Ali Abdullah) for the NASA
     Space Apps Challenge 2026, challenge “Planet X and SPHEREx”, Universal Event.</p>
     <p class="credits">SPHEREx data: NASA/JPL-Caltech and the SPHEREx team, via IRSA at IPAC.
-    Gaia data: ESA/Gaia/DPAC. WISE: NASA/JPL-Caltech. SIMBAD and Aladin: CDS, Université de
+    Gaia data: ESA/Gaia/DPAC. WISE: NASA/JPL-Caltech. Sesame, SIMBAD and Aladin: CDS, Université de
     Strasbourg. SkyBoT: IMCCE. NEOSSat: Canadian Space Agency / CADC. This project is not
     affiliated with or endorsed by NASA, and uses no NASA logos or branding.</p>
     <p class="credits">AI disclosure: AI assistants were used for research, planning and code
