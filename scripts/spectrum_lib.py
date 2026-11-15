@@ -20,7 +20,7 @@ from astropy.wcs import WCS
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from pipeline import CACHE as PIPE_CACHE  # noqa: E402  (data/cache)
-from s3fetch import fetch_image_hdu, list_keys  # noqa: E402
+from s3fetch import cached_listing, fetch_image_hdu, list_keys  # noqa: E402
 
 
 def frame_spectrum_point(fits_path, ra, dec):
@@ -120,7 +120,7 @@ def s3_pass(ra, dec, rows, max_fetches=180, deadline_s=None, log=print,
             continue
         if pointing not in listings:
             try:
-                listings[pointing] = list_keys(f"{tree}/level2/{pointing}/")
+                listings[pointing] = cached_listing(tree, pointing)
             except Exception as e:  # noqa: BLE001
                 log(f"s3 pass: list {pointing} failed {str(e)[:80]}")
                 listings[pointing] = []
