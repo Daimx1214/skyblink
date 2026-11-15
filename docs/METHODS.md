@@ -47,3 +47,24 @@ A candidate moving/changing object is accepted only if it passes all three tests
 - 3I/ATLAS is a low-SNR, extended source in SPHEREx data; the case file says so.
 - Barnard's Star moves ~1–2 SPHEREx pixels per year; Case 3 treats it as a
   measurement exercise with uncertainties, not a visual jump.
+
+## Overlays, spectra and staying current
+
+- **Two overlays, two epochs.** The Gaia overlay propagates every Gaia DR3
+  star to the frame's own date with its measured proper motion. The WISE
+  overlay draws NASA AllWISE catalogue positions exactly as catalogued (the
+  extract carries no proper motions; epoch ~2010), so a fast mover's WISE
+  diamond can sit off its SPHEREx position — the same displacement WiseView
+  hunters measure.
+- **Spectra are sampled, not interpolated.** A dossier spectrum is built
+  exposure by exposure: every archive visit covering the position contributes
+  one point at the wavelength its spectral WCS assigns to the target's pixel.
+  SPHEREx has 102 channels; a position has only been sampled in the channels
+  its visits placed on it, so each chart states how many channels it shows.
+  The backend runs the same measurement on demand (`/api/spectrum`).
+- **Links carry the view.** Target views use `?t=<slug>`; live coordinate
+  views use `?ra&dec&fov`. The FoV control re-renders live at 3–20 arcmin.
+- **Staying current.** `scripts/update_check.py` rebuilds each target's frame
+  set from the live archive and diffs observation IDs against the cached
+  manifest; a weekly scheduled run applies, re-enriches, re-bundles and
+  re-publishes any target with new epochs, and changes nothing otherwise.
