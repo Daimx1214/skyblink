@@ -351,7 +351,7 @@ function renderBandChart() {
   const fr = state.manifest.frames.filter((f) => f.band_flux != null);
   if (!fr.length) { el.innerHTML = ""; return; }
   const max = Math.max(...fr.map((f) => Math.abs(f.band_flux))) || 1;
-  const bw = 56, gap = 46, H = 176, base = H - 54;
+  const bw = 62, gap = 40, H = 176, base = H - 54;
   const width = fr.length * (bw + gap) + gap;
   const bars = fr.map((f, i) => {
     const h = Math.max(3, (Math.abs(f.band_flux) / max) * (base - 18));
