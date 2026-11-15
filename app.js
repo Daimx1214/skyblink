@@ -645,12 +645,21 @@ function handleSearch(qRaw) {
   if (m) { runLiveSearch(parseFloat(m[1]), parseFloat(m[2])); return; }
   if (API) {
     $("#legend").textContent = `Resolving “${qRaw.trim()}” with the backend…`;
-    fetchJSON(`${API}/api/resolve?q=${encodeURIComponent(qRaw.trim())}`, 20000,
-      `Resolving “${qRaw.trim()}”…`)
-      .then((res) => {
-        if (res && res.ra != null) runLiveSearch(res.ra, res.dec, res.name || qRaw.trim());
-        else $("#legend").textContent = `“${qRaw.trim()}” isn't one of the five pre-loaded targets, and the name lookup found nothing. Try coordinates like 269.4521, 4.6934.`;
-      }).catch(() => { $("#legend").textContent = RESOLVE_SLOW_MSG; });
+    const resolveURL = `${API}/api/resolve?q=${encodeURIComponent(qRaw.trim())}`;
+    const onRes = (res) => {
+      if (res && res.ra != null) runLiveSearch(res.ra, res.dec, res.name || qRaw.trim());
+      else $("#legend").textContent = `“${qRaw.trim()}” isn't one of the five pre-loaded targets, and the name lookup found nothing. Try coordinates like 269.4521, 4.6934.`;
+    };
+    fetchJSON(resolveURL, 20000, `Resolving “${qRaw.trim()}”…`)
+      .then(onRes)
+      .catch(() => {
+        // One automatic retry: a cold backend instance or a slow minute at
+        // CDS can eat the first attempt; the second usually answers fast.
+        $("#legend").textContent = `The first lookup was slow, trying once more…`;
+        fetchJSON(resolveURL, 20000, `Resolving “${qRaw.trim()}”…`)
+          .then(onRes)
+          .catch(() => { $("#legend").textContent = RESOLVE_SLOW_MSG; });
+      });
     return;
   }
   $("#legend").textContent = `“${qRaw.trim()}” isn't one of the five pre-loaded targets. Try a target name, or coordinates like 269.4521, 4.6934.`;
