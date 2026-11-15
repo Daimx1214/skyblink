@@ -32,6 +32,7 @@ const $ = (s) => document.querySelector(s);
 const state = {
   target: TARGETS[0], manifest: null, idx: 0, playing: false,
   timer: null, mode: "blink", imgCache: new Map(), gaiaOn: false, bandOnly: false,
+  wiseOn: false, fov: 5, liveCoords: null,
 };
 const HAS_EXPLORER = !!document.querySelector("#frame-a");
 
@@ -75,6 +76,7 @@ async function loadTarget(slug, scroll) {
     `RA ${t.ra.toFixed(4)}° · Dec ${t.dec >= 0 ? "+" : ""}${t.dec.toFixed(4)}° · FoV ${t.fov}′`;
   $("#look-for").textContent = t.look;
   $("#legend").textContent = "Loading frames…";
+  state.liveCoords = null;
   try {
     const bundled = (window.SKYBLINK_CACHE || {})[slug];
     if (bundled) { state.manifest = bundled.manifest; }
@@ -82,6 +84,23 @@ async function loadTarget(slug, scroll) {
       const r = await fetch(`cache/${slug}/manifest.json`);
       if (!r.ok) throw new Error("not cached");
       state.manifest = await r.json();
+      // fallback path: merge the same enrich/spectrum data the bundle has
+      try {
+        const er = await fetch(`cache/${slug}/enrich.json`);
+        if (er.ok) {
+          const en = await er.json();
+          const byObs = {};
+          (en.frames || []).forEach((x) => { byObs[x.obs_id] = x; });
+          state.manifest.frames.forEach((fr) => {
+            const x = byObs[fr.obs_id];
+            if (x) { fr.clean_pct = x.clean_pct; fr.band_flux = x.band_flux; fr.wave_um = x.wave_um; }
+          });
+          state.manifest.gaia = en.gaia || [];
+          state.manifest.wise = en.wise || [];
+        }
+        const sr = await fetch(`cache/${slug}/spectrum.json`);
+        if (sr.ok) state.manifest.spectrum = await sr.json();
+      } catch (e2) { /* enrich is optional */ }
     }
   } catch (e) {
     state.manifest = null;
@@ -91,6 +110,7 @@ async function loadTarget(slug, scroll) {
     return;
   }
   setupBandButton();
+  setupWiseButton();
   buildTimeline();
   showFrame(0);
   renderBandChart();
@@ -99,6 +119,8 @@ async function loadTarget(slug, scroll) {
   try {
     const u = new URL(location.href);
     u.searchParams.set("t", slug);
+    u.searchParams.delete("ra"); u.searchParams.delete("dec");
+    u.searchParams.delete("fov");
     history.replaceState(null, "", u);
   } catch (e) {}
   if (scroll) $("#explorer").scrollIntoView({ behavior: "smooth" });
@@ -139,6 +161,19 @@ function setupBandButton() {
   } else {
     b.disabled = false;
     b.title = "Blink only the frames taken with the same detector — the same wavelength band — so colour differences cannot imitate motion";
+  }
+}
+
+function setupWiseButton() {
+  const b = $("#btn-wise");
+  if (!b) return;
+  const n = state.manifest && state.manifest.wise ? state.manifest.wise.length : 0;
+  if (!n) {
+    b.disabled = true;
+    b.title = "WISE (AllWISE) sources are bundled with the five pre-loaded targets; none are bundled for this view.";
+  } else {
+    b.disabled = false;
+    b.title = "Show NASA WISE (AllWISE) catalogue sources in this field — diamonds, positions as catalogued (epoch ~2010)";
   }
 }
 
@@ -262,7 +297,7 @@ function drawGaia() {
   const W = wrap.clientWidth || 520;
   cv.width = W; cv.height = W;
   ctx.clearRect(0, 0, W, W);
-  if (!state.gaiaOn || !state.manifest || !state.manifest.gaia ||
+  if ((!state.gaiaOn && !state.wiseOn) || !state.manifest ||
       state.mode !== "blink") { cv.classList.add("hidden"); return; }
   const f = state.manifest.frames[state.idx];
   const yearFrac = Number(f.date.slice(0, 4)) + (Number(f.date.slice(5, 7)) - 0.5) / 12;
@@ -270,19 +305,42 @@ function drawGaia() {
   const ra0 = state.manifest.ra, dec0 = state.manifest.dec;
   const fovDeg = state.manifest.fov_arcmin / 60;
   const cosD = Math.cos(dec0 * Math.PI / 180);
-  ctx.strokeStyle = "rgba(45,212,191,0.9)";
-  ctx.lineWidth = 1.4;
-  state.manifest.gaia.forEach((s) => {
-    const raP = s.ra + (s.pmra / 3.6e6) * dt / cosD;
-    const decP = s.dec + (s.pmdec / 3.6e6) * dt;
+  const place = (raP, decP) => {
     const fx = 0.5 - ((raP - ra0) * cosD) / fovDeg;
     const fy = 0.5 - (decP - dec0) / fovDeg;
-    if (fx < 0 || fx > 1 || fy < 0 || fy > 1) return;
-    const r = Math.max(2.5, Math.min(9, 10 - (s.g - 10) * 0.75));
-    ctx.beginPath();
-    ctx.arc(fx * W, fy * W, r, 0, Math.PI * 2);
-    ctx.stroke();
-  });
+    return (fx < 0 || fx > 1 || fy < 0 || fy > 1) ? null : [fx * W, fy * W];
+  };
+  if (state.gaiaOn && state.manifest.gaia) {
+    ctx.strokeStyle = "rgba(45,212,191,0.9)";
+    ctx.lineWidth = 1.4;
+    state.manifest.gaia.forEach((s) => {
+      const p = place(s.ra + (s.pmra / 3.6e6) * dt / cosD,
+                      s.dec + (s.pmdec / 3.6e6) * dt);
+      if (!p) return;
+      const r = Math.max(2.5, Math.min(9, 10 - (s.g - 10) * 0.75));
+      ctx.beginPath();
+      ctx.arc(p[0], p[1], r, 0, Math.PI * 2);
+      ctx.stroke();
+    });
+  }
+  if (state.wiseOn && state.manifest.wise) {
+    // NASA WISE (AllWISE) catalogue positions, epoch ~2010 — drawn as
+    // catalogued (no proper-motion propagation; WISE published none here).
+    ctx.strokeStyle = "rgba(251,191,36,0.9)";
+    ctx.lineWidth = 1.3;
+    state.manifest.wise.forEach((s) => {
+      const p = place(s.ra, s.dec);
+      if (!p) return;
+      const r = Math.max(2.5, Math.min(8, 11 - (s.w1 - 8) * 0.8));
+      ctx.beginPath();
+      ctx.moveTo(p[0], p[1] - r);
+      ctx.lineTo(p[0] + r, p[1]);
+      ctx.lineTo(p[0], p[1] + r);
+      ctx.lineTo(p[0] - r, p[1]);
+      ctx.closePath();
+      ctx.stroke();
+    });
+  }
   cv.classList.remove("hidden");
 }
 
@@ -352,6 +410,7 @@ function fillDetail() {
       <div><dt>Releases</dt><dd>${rels}</dd></div>
       <div><dt>Detectors</dt><dd>${dets}</dd></div>
       <div><dt>Gaia stars in field</dt><dd>${(state.manifest.gaia || []).length}</dd></div>
+      <div><dt>WISE sources in field</dt><dd>${(state.manifest.wise || []).length}</dd></div>
     </dl>`;
   document.title = `${t.name} — SkyBlink`;
 }
@@ -391,6 +450,7 @@ document.addEventListener("keydown", (e) => {
   else if (e.key === "ArrowRight") { stopPlay(); stepFrame(1); }
   else if (e.key === "ArrowLeft") { stopPlay(); stepFrame(-1); }
   else if (e.key === "g" || e.key === "G") { const b = $("#btn-gaia"); if (b) b.click(); }
+  else if (e.key === "w" || e.key === "W") { const b = $("#btn-wise"); if (b) b.click(); }
   else if (e.key === "1") setMode("blink");
   else if (e.key === "2") setMode("side");
   else if (e.key === "3") setMode("diff");
@@ -422,27 +482,80 @@ function startTour() {
   tourTimers.push(setTimeout(endTour, 35000));
 }
 
+function setURLCoords() {
+  try {
+    const u = new URL(location.href);
+    u.searchParams.delete("t");
+    u.searchParams.set("ra", state.liveCoords.ra.toFixed(4));
+    u.searchParams.set("dec", state.liveCoords.dec.toFixed(4));
+    u.searchParams.set("fov", state.fov);
+    history.replaceState(null, "", u);
+  } catch (e) {}
+}
+
+function fetchLiveSpectrum(ra, dec) {
+  if (!API || !$("#spectrum-section")) return;
+  fetch(`${API}/api/spectrum?ra=${ra}&dec=${dec}`).then((r) => r.json())
+    .then((sp) => {
+      if (sp && sp.ok && sp.wave_um && sp.wave_um.length >= 6 &&
+          state.liveCoords && state.liveCoords.ra === ra &&
+          state.liveCoords.dec === dec && state.manifest) {
+        state.manifest.spectrum = {
+          wave_um: sp.wave_um, flux_mjy: sp.flux_mjy,
+          source: `SPHEREx individual exposures via the live backend (${sp.exposures} exposures, ${sp.channels} distinct channels${sp.complete ? "" : ", partial — the backend's time budget ran out"})`,
+          note: "Measured on the fly by the SkyBlink backend: wavelength from each exposure's spectral WCS at this position, aperture photometry (r=2 px, annulus background), median-combined per channel.",
+        };
+        renderSpectrum();
+      }
+    }).catch(() => { /* the spectrum is a bonus; frames are the product */ });
+}
+
+function runLiveSearch(ra, dec, label, scroll = true) {
+  if (!API) {
+    $("#legend").textContent = "Live coordinate search runs on the SkyBlink backend, which is offline in this static preview. The five official targets below are fully loaded.";
+    const tg = $("#targets");
+    if (tg) tg.scrollIntoView({ behavior: "smooth" });
+    return;
+  }
+  stopPlay();
+  const fov = state.fov;
+  $("#legend").textContent = `Live query for RA ${ra}, Dec ${dec} (FoV ${fov}′) sent to the SkyBlink backend…`;
+  fetch(`${API}/api/frames?ra=${ra}&dec=${dec}&fov=${fov}`).then((r) => r.json())
+    .then((man) => {
+      if (man && man.ok) {
+        state.target = { slug: null, name: label || `${ra.toFixed(4)}°, ${dec >= 0 ? "+" : ""}${dec.toFixed(4)}°`, ra, dec, fov, look: "Custom coordinates, rendered live from the archive by the backend." };
+        state.liveCoords = { ra, dec };
+        state.manifest = man; state.idx = 0; state.imgCache.clear();
+        state.bandOnly = false;
+        const bb = $("#btn-band"); if (bb) bb.classList.remove("on");
+        setupBandButton();
+        setupWiseButton();
+        $("#viewer-title").textContent = state.target.name;
+        $("#viewer-sub").textContent = `RA ${ra.toFixed(4)}° · Dec ${dec >= 0 ? "+" : ""}${dec.toFixed(4)}° · FoV ${fov}′ · live backend`;
+        const lf = $("#look-for"); if (lf) lf.textContent = state.target.look;
+        setURLCoords();
+        buildTimeline(); showFrame(0);
+        renderBandChart(); renderSpectrum(); fillDetail();
+        if (scroll) { const ex = $("#explorer"); if (ex) ex.scrollIntoView({ behavior: "smooth" }); }
+        fetchLiveSpectrum(ra, dec);
+      } else { $("#legend").textContent = "No SPHEREx frames found for those coordinates yet."; }
+    }).catch(() => { $("#legend").textContent = "Live backend unreachable — the five targets below are pre-loaded."; });
+}
+
 function handleSearch(qRaw) {
   const q = qRaw.trim().toLowerCase();
   if (!q) return;
   const hit = TARGETS.find((t) => t.name.toLowerCase().includes(q) || q.includes(t.name.toLowerCase().split(" ")[0]));
   if (hit) { loadTarget(hit.slug, true); return; }
   const m = q.match(/(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)/);
-  if (m) {
-    const ra = parseFloat(m[1]), dec = parseFloat(m[2]);
-    if (API) {
-      $("#legend").textContent = `Live query for RA ${ra}, Dec ${dec} sent to the SkyBlink backend…`;
-      fetch(`${API}/api/frames?ra=${ra}&dec=${dec}&fov=5`).then((r) => r.json())
-        .then((man) => {
-          if (man && man.ok) {
-            state.target = { slug: null, name: `${ra.toFixed(4)}°, ${dec >= 0 ? "+" : ""}${dec.toFixed(4)}°`, ra, dec, fov: 5, look: "Custom coordinates." };
-            state.manifest = man; buildTimeline(); showFrame(0);
-          } else { $("#legend").textContent = "No SPHEREx frames found for those coordinates yet."; }
-        }).catch(() => { $("#legend").textContent = "Live backend unreachable — the five targets below are pre-loaded."; });
-    } else {
-      $("#legend").textContent = "Live coordinate search runs on the SkyBlink backend, which is offline in this static preview. The five official targets below are fully loaded.";
-      $("#targets").scrollIntoView({ behavior: "smooth" });
-    }
+  if (m) { runLiveSearch(parseFloat(m[1]), parseFloat(m[2])); return; }
+  if (API) {
+    $("#legend").textContent = `Resolving “${qRaw.trim()}” with the backend…`;
+    fetch(`${API}/api/resolve?q=${encodeURIComponent(qRaw.trim())}`).then((r) => r.json())
+      .then((res) => {
+        if (res && res.ra != null) runLiveSearch(res.ra, res.dec, res.name || qRaw.trim());
+        else $("#legend").textContent = `“${qRaw.trim()}” isn't one of the five pre-loaded targets, and the name lookup found nothing. Try coordinates like 269.4521, 4.6934.`;
+      }).catch(() => { $("#legend").textContent = "Live backend unreachable — the five targets below are pre-loaded."; });
     return;
   }
   $("#legend").textContent = `“${qRaw.trim()}” isn't one of the five pre-loaded targets. Try a target name, or coordinates like 269.4521, 4.6934.`;
@@ -467,6 +580,23 @@ if (HAS_EXPLORER) {
     gaiaBtn.classList.toggle("on", state.gaiaOn);
     drawGaia();
   });
+  const wiseBtn = $("#btn-wise");
+  if (wiseBtn) wiseBtn.addEventListener("click", () => {
+    state.wiseOn = !state.wiseOn;
+    wiseBtn.classList.toggle("on", state.wiseOn);
+    drawGaia();
+  });
+  const fovSel = $("#fov-select");
+  if (fovSel) fovSel.addEventListener("change", () => {
+    state.fov = Number(fovSel.value);
+    if (state.liveCoords) {
+      runLiveSearch(state.liveCoords.ra, state.liveCoords.dec, state.target.name);
+    } else if (state.target && state.target.slug && API) {
+      runLiveSearch(state.target.ra, state.target.dec, state.target.name);
+    } else if (state.target && state.target.slug) {
+      $("#legend").textContent = `FoV choices render live on the backend; this target is pre-rendered at ${state.target.fov}′ in the static copy.`;
+    }
+  });
   const bandBtn = $("#btn-band");
   if (bandBtn) bandBtn.addEventListener("click", () => {
     if (!state.manifest) return;
@@ -484,7 +614,16 @@ if (HAS_EXPLORER) {
   const shareBtn = $("#btn-share");
   if (shareBtn) shareBtn.addEventListener("click", async () => {
     const u = new URL(location.href);
-    u.searchParams.set("t", state.target.slug);
+    if (state.liveCoords) {
+      u.searchParams.delete("t");
+      u.searchParams.set("ra", state.liveCoords.ra.toFixed(4));
+      u.searchParams.set("dec", state.liveCoords.dec.toFixed(4));
+      u.searchParams.set("fov", state.fov);
+    } else {
+      u.searchParams.set("t", state.target.slug);
+      u.searchParams.delete("ra"); u.searchParams.delete("dec");
+      u.searchParams.delete("fov");
+    }
     history.replaceState(null, "", u.toString());
     try { await navigator.clipboard.writeText(u.toString()); shareBtn.textContent = "Link copied ✓"; }
     catch (e) { shareBtn.textContent = u.toString(); }
@@ -512,6 +651,20 @@ if (API && $("#foot-status")) $("#foot-status").textContent = "live backend conn
 if ($("#target-grid")) buildCards();
 if (HAS_EXPLORER) {
   const params = new URLSearchParams(location.search);
-  const start = TARGETS.some((t) => t.slug === params.get("t")) ? params.get("t") : "barnards-star";
-  loadTarget(start, false);
+  const pra = parseFloat(params.get("ra")), pdec = parseFloat(params.get("dec"));
+  const pfov = parseFloat(params.get("fov"));
+  if (Number.isFinite(pfov) && pfov >= 1 && pfov <= 30) {
+    state.fov = pfov;
+    const fs = $("#fov-select");
+    if (fs) fs.value = String(pfov);
+  }
+  if (Number.isFinite(pra) && Number.isFinite(pdec) && API) {
+    runLiveSearch(pra, pdec, null, false);
+  } else {
+    if (Number.isFinite(pra) && Number.isFinite(pdec)) {
+      $("#legend").textContent = "That link points at live coordinates, which need the backend; the five official targets below are fully loaded.";
+    }
+    const start = TARGETS.some((t) => t.slug === params.get("t")) ? params.get("t") : "barnards-star";
+    loadTarget(start, false);
+  }
 }
