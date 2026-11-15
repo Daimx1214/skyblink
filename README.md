@@ -25,17 +25,27 @@ Six pages, one job: show how the sky changes.
 - **Coordinate / name search (backend)** — the challenge's stated objective: enter a
   patch of sky (RA/Dec or an object name resolved via SIMBAD) and get a blink series.
   Runs on the API service in `services/`; the deployed static site pre-loads the targets.
+  The same backend measures an **on-the-fly spectrum** for the searched position
+  (`/api/spectrum`: one point per archive exposure covering it, binned by channel).
 - **Blink player** — aligned, north-up epochs flip in place; play/pause, step,
   timeline, speed. **Modes** — Blink · Side-by-side · Difference (later − earlier).
 - **Five official test targets pre-loaded** — Barnard's Star, WISE 0855,
   Epsilon Indi B, RW Aurigae, R Draconis, each with its honest display recipe.
 - **Dossier page per target** — blink explorer plus facts, an **ESA Gaia DR3
-  overlay** (positions proper-motion propagated to each frame's epoch), per-frame
-  **data quality** (clean-pixel % from the SPHEREx FLAGS plane) and **wavelength
-  band**, a **detector band-flux chart**, and the field inside the SPHEREx
-  all-sky cube via **Aladin Lite**.
+  overlay** (positions proper-motion propagated to each frame's epoch), a **NASA
+  WISE (AllWISE) overlay** (catalogue positions as published, epoch ~2010),
+  per-frame **data quality** (clean-pixel % from the SPHEREx FLAGS plane) and
+  **wavelength band**, a **detector band-flux chart**, a **per-target spectrum**
+  assembled exposure-by-exposure from the archive (the channels the visits have
+  actually sampled at that position, counted honestly on the page), and the field
+  inside the SPHEREx all-sky cube via **Aladin Lite**.
 - **Shareable views** — every target lives at its own URL (`target.html?t=…`);
-  a Share link button copies the current view.
+  live coordinate views carry their coordinates and field of view
+  (`?ra&dec&fov`), and a Share link button copies the current view. The **FoV
+  control** re-renders a field live from the archive at 3–20 arcmin.
+- **Staying current** — `scripts/update_check.py` diffs each target's cached
+  epochs against the live archive; a weekly scheduled run rebuilds and
+  re-publishes any target whose field has gained a new visit epoch.
 - **Case Files** — guided investigations: interstellar comet **3I/ATLAS** between
   its August and December 2025 visits; the **Two-Epoch Check** candidate-vetting
   method; and a **measured proper-motion case** — Barnard's Star centroided in
@@ -45,7 +55,7 @@ Six pages, one job: show how the sky changes.
   and fixed (a south-up rendering bug; a 4.4′ stale target centre), the stated
   limits, and a table of all eight challenge resources with how each was used.
 - **Provenance everywhere** — every frame shows its release (DR1/QR3), observation
-  date (from archive metadata, not file headers), detector and observation ID.
+  date (each exposure's own FITS DATE-OBS header), detector and observation ID.
 - **Dark & light themes**, responsive down to phones, no accounts, no tracking.
 
 ## How it works
