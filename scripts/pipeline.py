@@ -29,8 +29,12 @@ from PIL import Image
 from reproject import reproject_interp
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CACHE = os.path.join(ROOT, "data", "cache")
-os.makedirs(CACHE, exist_ok=True)
+CACHE = os.environ.get("SKYBLINK_FITS_CACHE") or os.path.join(ROOT, "data", "cache")
+try:
+    os.makedirs(CACHE, exist_ok=True)
+except OSError:  # read-only host (e.g. Vercel): fall back to /tmp
+    CACHE = "/tmp/skyblink-fits-cache"
+    os.makedirs(CACHE, exist_ok=True)
 
 COLLECTIONS = ["spherex_dr1", "spherex_dr1_deep", "spherex_qr3", "spherex_qr3_deep"]
 PIXSCALE_ARCSEC = 3.1  # half the native ~6.2"/px: smooth display grid
