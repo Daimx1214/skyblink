@@ -23,7 +23,7 @@ const TARGETS = [
   { slug: "r-draconis", name: "R Draconis", ra: 248.1675, dec: 66.7550, fov: 5,
     kind: "Variable · Mira, ~246 d",
     blurb: "A pulsating Mira variable near the north ecliptic pole.",
-    look: "A Mira variable near the north ecliptic pole — the most-visited target in this list, so it has the most epochs. Watch for saturation flags at maximum light." },
+    look: "A Mira variable near the north ecliptic pole. It swells and fades over its ~246-day cycle, so the blink pulses instead of shifting. Watch for saturation flags at maximum light." },
 ];
 
 const API = window.SKYBLINK_API || null; // live backend base URL when deployed
@@ -510,6 +510,27 @@ function fetchLiveSpectrum(ra, dec) {
     }).catch(() => { /* the spectrum is a bonus; frames are the product */ });
 }
 
+/* Fetch JSON with a hard timeout and a ticking status line, so a slow or
+   dead archive never looks like a frozen page. */
+function fetchJSON(url, timeoutMs, statusText) {
+  const ctl = new AbortController();
+  const t0 = Date.now();
+  const legend = $("#legend");
+  const timer = setInterval(() => {
+    const s = Math.round((Date.now() - t0) / 1000);
+    if (legend) legend.textContent = `${statusText} ${s}s elapsed. First renders can take about a minute; the wait is the archive answering, not a frozen page.`;
+  }, 5000);
+  const killer = setTimeout(() => ctl.abort(), timeoutMs);
+  return fetch(url, { signal: ctl.signal })
+    .then((r) => {
+      if (!r.ok) throw new Error(`http ${r.status}`);
+      return r.json();
+    })
+    .finally(() => { clearInterval(timer); clearTimeout(killer); });
+}
+
+const ARCHIVE_SLOW_MSG = "The archive did not answer in time. IRSA, the NASA archive SkyBlink queries, is responding slowly or not at all right now; the five pre-loaded targets below open instantly. Please try the live search again later.";
+
 function runLiveSearch(ra, dec, label, scroll = true) {
   if (!API) {
     $("#legend").textContent = "Live coordinate search runs on the SkyBlink backend, which is offline in this static preview. The five official targets below are fully loaded.";
@@ -520,7 +541,8 @@ function runLiveSearch(ra, dec, label, scroll = true) {
   stopPlay();
   const fov = state.fov;
   $("#legend").textContent = `Live query for RA ${ra}, Dec ${dec} (FoV ${fov}′) sent to the SkyBlink backend…`;
-  fetch(`${API}/api/frames?ra=${ra}&dec=${dec}&fov=${fov}`).then((r) => r.json())
+  fetchJSON(`${API}/api/frames?ra=${ra}&dec=${dec}&fov=${fov}`, 150000,
+    `Querying the SPHEREx archive for RA ${ra}, Dec ${dec}…`)
     .then((man) => {
       if (man && man.ok) {
         state.target = { slug: null, name: label || `${ra.toFixed(4)}°, ${dec >= 0 ? "+" : ""}${dec.toFixed(4)}°`, ra, dec, fov, look: "Custom coordinates, rendered live from the archive by the backend." };
@@ -539,7 +561,7 @@ function runLiveSearch(ra, dec, label, scroll = true) {
         if (scroll) { const ex = $("#explorer"); if (ex) ex.scrollIntoView({ behavior: "smooth" }); }
         fetchLiveSpectrum(ra, dec);
       } else { $("#legend").textContent = "No SPHEREx frames found for those coordinates yet."; }
-    }).catch(() => { $("#legend").textContent = "Live backend unreachable — the five targets below are pre-loaded."; });
+    }).catch(() => { $("#legend").textContent = ARCHIVE_SLOW_MSG; });
 }
 
 function handleSearch(qRaw) {
@@ -563,11 +585,12 @@ function handleSearch(qRaw) {
   if (m) { runLiveSearch(parseFloat(m[1]), parseFloat(m[2])); return; }
   if (API) {
     $("#legend").textContent = `Resolving “${qRaw.trim()}” with the backend…`;
-    fetch(`${API}/api/resolve?q=${encodeURIComponent(qRaw.trim())}`).then((r) => r.json())
+    fetchJSON(`${API}/api/resolve?q=${encodeURIComponent(qRaw.trim())}`, 45000,
+      `Resolving “${qRaw.trim()}”…`)
       .then((res) => {
         if (res && res.ra != null) runLiveSearch(res.ra, res.dec, res.name || qRaw.trim());
         else $("#legend").textContent = `“${qRaw.trim()}” isn't one of the five pre-loaded targets, and the name lookup found nothing. Try coordinates like 269.4521, 4.6934.`;
-      }).catch(() => { $("#legend").textContent = "Live backend unreachable — the five targets below are pre-loaded."; });
+      }).catch(() => { $("#legend").textContent = ARCHIVE_SLOW_MSG; });
     return;
   }
   $("#legend").textContent = `“${qRaw.trim()}” isn't one of the five pre-loaded targets. Try a target name, or coordinates like 269.4521, 4.6934.`;
