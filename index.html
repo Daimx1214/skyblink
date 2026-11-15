@@ -101,11 +101,21 @@
         <label class="fps mono">speed
           <input id="fps" type="range" min="1" max="10" value="3">
         </label>
+        <label class="fps mono">FoV
+          <select id="fov-select" class="mono" title="Field of view for live backend renders">
+            <option value="3">3&prime;</option>
+            <option value="5" selected>5&prime;</option>
+            <option value="8">8&prime;</option>
+            <option value="12">12&prime;</option>
+            <option value="20">20&prime;</option>
+          </select>
+        </label>
       </div>
       <div class="viewer-actions">
         <button id="btn-gaia" class="pill-btn" type="button" title="Show ESA Gaia DR3 stars, proper-motion propagated to this epoch">Gaia overlay</button>
+        <button id="btn-wise" class="pill-btn" type="button" title="Show NASA WISE (AllWISE) catalogue sources in this field — diamonds, positions as catalogued (epoch ~2010)">WISE overlay</button>
         <button id="btn-share" class="pill-btn" type="button" title="Copy a link to this exact view">Share link</button>
-        <span class="keys-hint">Space play · ←/→ step · 1/2/3 modes · G Gaia</span>
+        <span class="keys-hint">Space play · ←/→ step · 1/2/3 modes · G Gaia · W WISE</span>
       </div>
     </div>
 
@@ -129,6 +139,12 @@
         <p id="freshness" class="mono">SPHEREx DR1 (surveys 1–2, reprocessed) + QR3 (surveys 3–4)</p>
       </div>
     </aside>
+  </section>
+
+  <section class="panel-section" id="spectrum-section" hidden>
+    <h2>The spectrum, channel by channel</h2>
+    <p id="spectrum-note"></p>
+    <div id="spectrum-chart" class="band-chart"></div>
   </section>
 
   <section class="targets" id="targets">
