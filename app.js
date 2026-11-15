@@ -653,10 +653,14 @@ if (HAS_EXPLORER) {
   const params = new URLSearchParams(location.search);
   const pra = parseFloat(params.get("ra")), pdec = parseFloat(params.get("dec"));
   const pfov = parseFloat(params.get("fov"));
-  if (Number.isFinite(pfov) && pfov >= 1 && pfov <= 30) {
+  const fs = $("#fov-select");
+  // Accept only fields the control actually offers, so an old link
+  // naming a retired field falls back to the default instead of
+  // asking the backend for a render it cannot finish in time.
+  if (Number.isFinite(pfov) && fs
+      && [...fs.options].some(o => parseFloat(o.value) === pfov)) {
     state.fov = pfov;
-    const fs = $("#fov-select");
-    if (fs) fs.value = String(pfov);
+    fs.value = String(pfov);
   }
   if (Number.isFinite(pra) && Number.isFinite(pdec) && API) {
     runLiveSearch(pra, pdec, null, false);
