@@ -47,6 +47,27 @@
   </section>
 
   <section class="panel-section">
+    <h2>Validation, with numbers</h2>
+    <p>A blink tool is only as good as its measured recovery — so we measured it. We injected
+    <b>540 synthetic movers</b> (Gaussian, σ ≈ 1.1 px) into real Barnard's Star and R Draconis
+    epoch pairs and ran the product's own difference-dipole test (positive lobe &gt; 6σ at the new
+    position, negative lobe &gt; 4σ at the old):</p>
+    <ol class="steps">
+      <li><b>100% recovered</b> at brightness ≥ 15σ, for shifts of 1, 2 and 4 pixels.</li>
+      <li>At 8σ: <b>97–98% recovered</b> for shifts ≥ 2 px, and <b>60%</b> for a 1 px shift — a
+      sub-PSF move partially cancels inside a difference image, which is exactly why the blink
+      itself, not the difference alone, is the primary view.</li>
+      <li><b>Control:</b> the same detector on the six <i>uninjected</i> pairs finds <b>439 peaks
+      above 6σ</b> — genuine residuals from bright-star saturation and cross-detector distortion.
+      That number is why the Two-Epoch Check exists: a difference peak is a candidate, never a
+      discovery. (Reproduce it: <span class="mono">scripts/validate.py</span> in the source archive.)</li>
+    </ol>
+    <p>One limit, stated plainly: the injected sources are idealised Gaussians placed on real
+    frames and tested with our own detection rule. This measures the sensitivity of the
+    difference test, not performance on real moving objects, whose shapes and trails are
+    messier.</p>
+  </section>
+  <section class="panel-section">
     <h2>The pipeline</h2>
     <ol class="steps">
       <li><b>Discover.</b> IRSA's SIA service is queried for every SPHEREx observation intersecting the field, restricted to the current uniform releases: DR1 and QR3 (collections <span class="mono">spherex_dr1, spherex_dr1_deep, spherex_qr3, spherex_qr3_deep</span>). Images are DR1/QR3 only; the one QR2-era item anywhere in the project is IRSA's published 3I/ATLAS position table, used for the comet's coordinates in Case 1.</li>
@@ -86,27 +107,6 @@
     per epoch. Where WiseView helped us, we say so.</p>
   </section>
 
-  <section class="panel-section">
-    <h2>Validation, with numbers</h2>
-    <p>A blink tool is only as good as its measured recovery — so we measured it. We injected
-    <b>540 synthetic movers</b> (Gaussian, σ ≈ 1.1 px) into real Barnard's Star and R Draconis
-    epoch pairs and ran the product's own difference-dipole test (positive lobe &gt; 6σ at the new
-    position, negative lobe &gt; 4σ at the old):</p>
-    <ol class="steps">
-      <li><b>100% recovered</b> at brightness ≥ 15σ, for shifts of 1, 2 and 4 pixels.</li>
-      <li>At 8σ: <b>97–98% recovered</b> for shifts ≥ 2 px, and <b>60%</b> for a 1 px shift — a
-      sub-PSF move partially cancels inside a difference image, which is exactly why the blink
-      itself, not the difference alone, is the primary view.</li>
-      <li><b>Control:</b> the same detector on the six <i>uninjected</i> pairs finds <b>439 peaks
-      above 6σ</b> — genuine residuals from bright-star saturation and cross-detector distortion.
-      That number is why the Two-Epoch Check exists: a difference peak is a candidate, never a
-      discovery. (Reproduce it: <span class="mono">scripts/validate.py</span> in the source archive.)</li>
-    </ol>
-    <p>One limit, stated plainly: the injected sources are idealised Gaussians placed on real
-    frames and tested with our own detection rule. This measures the sensitivity of the
-    difference test, not performance on real moving objects, whose shapes and trails are
-    messier.</p>
-  </section>
 
   <section class="panel-section">
     <h2>Overlays, spectra and staying current</h2>

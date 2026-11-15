@@ -63,6 +63,7 @@
           <canvas id="diff-canvas" class="hidden"></canvas>
           <canvas id="gaia-canvas" class="hidden" aria-hidden="true"></canvas>
           <div class="crosshair" aria-hidden="true"></div>
+          <div id="target-ring" class="target-ring" hidden aria-hidden="true"></div>
           <div class="scalebar mono" aria-hidden="true">1 arcmin</div>
         </div>
         <div class="side-pair hidden" id="side-pair">
@@ -92,6 +93,7 @@
         <button id="btn-gaia" class="pill-btn" type="button" title="Show ESA Gaia DR3 stars, proper-motion propagated to this epoch">Gaia overlay</button>
         <button id="btn-wise" class="pill-btn" type="button" title="Show NASA WISE (AllWISE) catalogue sources in this field — diamonds, positions as catalogued (epoch ~2010)">WISE overlay</button>
         <button id="btn-band" class="pill-btn" type="button" title="Blink only the frames taken with the same detector — the same wavelength band">Same band only</button>
+        <button id="btn-ring" class="pill-btn" type="button" title="Gold ring at the frame centre, where the target sits. On by default for the two faintest targets">Target marker</button>
         <button id="btn-share" class="pill-btn" type="button" title="Copy a link to this exact view">Share link</button>
         <span class="keys-hint">Space play · ←/→ step · 1/2/3 modes · G Gaia · W WISE</span>
       </div>

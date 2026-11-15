@@ -43,7 +43,7 @@ function buildCards() {
     const b = document.createElement("button");
     b.className = "target-card" + (t.slug === state.target.slug ? " active" : "");
     b.dataset.slug = t.slug;
-    b.innerHTML = `<div class="kind">${t.kind}</div><h3>${t.name}</h3>
+    b.innerHTML = `<img class="tthumb" src="cache/${t.slug}/context.jpg" alt="" loading="lazy"><div class="kind">${t.kind}</div><h3>${t.name}</h3>
       <p>${t.blurb}</p><div class="tstatus mono" data-status>checking cache…</div>`;
     b.addEventListener("click", () => {
       if (HAS_EXPLORER) loadTarget(t.slug, true);
@@ -69,6 +69,12 @@ async function loadTarget(slug, scroll) {
   state.bandOnly = false;
   const bb0 = $("#btn-band");
   if (bb0) bb0.classList.remove("on");
+  const ringBtn = $("#btn-ring"), ring = $("#target-ring");
+  if (ringBtn && ring) {
+    const faint = (slug === "wise-0855" || slug === "epsilon-indi-b");
+    ring.hidden = !faint;
+    ringBtn.classList.toggle("on", faint);
+  }
   document.querySelectorAll(".target-card").forEach((c) =>
     c.classList.toggle("active", c.dataset.slug === slug));
   $("#viewer-title").textContent = t.name;
@@ -109,7 +115,7 @@ async function loadTarget(slug, scroll) {
     $("#timeline").innerHTML = "";
     return;
   }
-  setupBandButton();
+  setupBandButton(); setupRingButton();
   setupWiseButton();
   buildTimeline();
   showFrame(0);
@@ -149,6 +155,15 @@ function stepFrame(dir) {
 function baseFrame() {
   const a = allowedFrames();
   return state.manifest.frames[a.length ? a[0] : 0];
+}
+function setupRingButton() {
+  const b = $("#btn-ring"), ring = $("#target-ring");
+  if (!b || !ring || b.dataset.wired) return;
+  b.dataset.wired = "1";
+  b.addEventListener("click", () => {
+    ring.hidden = !ring.hidden;
+    b.classList.toggle("on", !ring.hidden);
+  });
 }
 function setupBandButton() {
   const b = $("#btn-band");
@@ -593,7 +608,7 @@ function runLiveSearch(ra, dec, label, scroll = true) {
         state.manifest = man; state.idx = 0; state.imgCache.clear();
         state.bandOnly = false;
         const bb = $("#btn-band"); if (bb) bb.classList.remove("on");
-        setupBandButton();
+        setupBandButton(); setupRingButton();
         setupWiseButton();
         $("#viewer-title").textContent = state.target.name;
         $("#viewer-sub").textContent = `RA ${ra.toFixed(4)}° · Dec ${dec >= 0 ? "+" : ""}${dec.toFixed(4)}° · FoV ${fov}′ · live backend`;

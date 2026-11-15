@@ -215,3 +215,6 @@ main{max-width:1180px;margin:0 auto;padding:0 18px 40px}
 .impact-line{margin:26px 0 4px;padding:16px 20px;background:var(--panel2);border:1px solid var(--line);border-left:4px solid #F2B134;border-radius:10px;font-size:18px;line-height:1.55;color:var(--star)}
 .demo-video{margin:30px 0}
 .demo-video video{width:100%;max-width:880px;display:block;border:1px solid var(--line);border-radius:12px;background:#000}
+.target-card .tthumb{width:100%;height:96px;object-fit:cover;border-radius:9px;display:block;margin-bottom:10px}
+.target-ring{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border:2px solid #F2B134;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.5),inset 0 0 0 1px rgba(0,0,0,.35);pointer-events:none;z-index:6}
+.impact-sub{font-size:15px;color:var(--mist)}
