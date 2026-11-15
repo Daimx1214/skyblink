@@ -32,7 +32,7 @@ const $ = (s) => document.querySelector(s);
 const state = {
   target: TARGETS[0], manifest: null, idx: 0, playing: false,
   timer: null, mode: "blink", imgCache: new Map(), gaiaOn: false, bandOnly: false,
-  wiseOn: false, fov: 5, liveCoords: null,
+  wiseOn: false, fov: 5, viewFov: 5, liveCoords: null,
 };
 const HAS_EXPLORER = !!document.querySelector("#frame-a");
 
@@ -113,6 +113,7 @@ async function loadTarget(slug, scroll) {
   setupWiseButton();
   buildTimeline();
   showFrame(0);
+  applyViewFov();
   renderBandChart();
   renderSpectrum();
   fillDetail();
@@ -220,6 +221,7 @@ function loadImg(url) {
 }
 
 async function showFrame(i) {
+  if (!state.manifest) return;
   const frames = state.manifest.frames;
   state.idx = (i + frames.length) % frames.length;
   const f = frames[state.idx];
@@ -510,6 +512,34 @@ function fetchLiveSpectrum(ra, dec) {
     }).catch(() => { /* the spectrum is a bonus; frames are the product */ });
 }
 
+/* The FoV control is a view control. Pre-loaded frames are rendered at
+   one native field (5 arcmin, 3 for WISE 0855); a narrower view is the
+   centre crop of that same frame — same pixels, same scale — applied
+   instantly on the client, and the overlays ride along because every
+   layer scales together. The control always shows the field actually
+   on screen. */
+function applyViewFov() {
+  if (!state.manifest) return;
+  const native = state.manifest.fov_arcmin || (state.target && state.target.fov) || 5;
+  const view = Math.min(state.fov || native, native);
+  state.viewFov = view;
+  state.fov = view;
+  const sel = $("#fov-select");
+  if (sel && [...sel.options].some((o) => parseFloat(o.value) === view)) {
+    sel.value = String(view);
+  }
+  const k = native / view;
+  ["#frame-a", "#frame-b", "#diff-canvas", "#gaia-canvas", "#side-a", "#side-b"]
+    .forEach((s) => {
+      const el = $(s);
+      if (el) el.style.transform = k > 1.001 ? `scale(${k})` : "";
+    });
+  const sb = $(".scalebar");
+  if (sb) sb.style.width = (96.75 / view) + "%";
+  const vs = $("#viewer-sub");
+  if (vs) vs.textContent = vs.textContent.replace(/FoV [\d.]+′/, `FoV ${view}′`);
+}
+
 /* Fetch JSON with a hard timeout and a ticking status line, so a slow or
    dead archive never looks like a frozen page. */
 function fetchJSON(url, timeoutMs, statusText) {
@@ -518,8 +548,8 @@ function fetchJSON(url, timeoutMs, statusText) {
   const legend = $("#legend");
   const timer = setInterval(() => {
     const s = Math.round((Date.now() - t0) / 1000);
-    if (legend) legend.textContent = `${statusText} ${s}s elapsed. First renders can take about a minute; the wait is the archive answering, not a frozen page.`;
-  }, 5000);
+    if (legend) legend.textContent = `${statusText} ${s}s elapsed. The search stops at 20s with a clear message if the archive does not answer.`;
+  }, 4000);
   const killer = setTimeout(() => ctl.abort(), timeoutMs);
   return fetch(url, { signal: ctl.signal })
     .then((r) => {
@@ -540,8 +570,21 @@ function runLiveSearch(ra, dec, label, scroll = true) {
   }
   stopPlay();
   const fov = state.fov;
+  // Clear the previous view first: old frames must never sit on screen
+  // looking like the answer to a query that is still running.
+  state.manifest = null;
+  state.imgCache.clear();
+  const fa = $("#frame-a"), fb = $("#frame-b");
+  if (fa) fa.removeAttribute("src");
+  if (fb) fb.removeAttribute("src");
+  const tl = $("#timeline"); if (tl) tl.innerHTML = "";
+  const fi = $("#frame-info"); if (fi) fi.innerHTML = "";
+  const dc = $("#diff-canvas"); if (dc) dc.classList.add("hidden");
+  const gc = $("#gaia-canvas"); if (gc) gc.classList.add("hidden");
+  $("#viewer-title").textContent = label || `${ra.toFixed(4)}°, ${dec >= 0 ? "+" : ""}${dec.toFixed(4)}°`;
+  $("#viewer-sub").textContent = `RA ${ra.toFixed(4)}° · Dec ${dec >= 0 ? "+" : ""}${dec.toFixed(4)}° · FoV ${fov}′ · live search`;
   $("#legend").textContent = `Live query for RA ${ra}, Dec ${dec} (FoV ${fov}′) sent to the SkyBlink backend…`;
-  fetchJSON(`${API}/api/frames?ra=${ra}&dec=${dec}&fov=${fov}`, 150000,
+  fetchJSON(`${API}/api/frames?ra=${ra}&dec=${dec}&fov=${fov}`, 20000,
     `Querying the SPHEREx archive for RA ${ra}, Dec ${dec}…`)
     .then((man) => {
       if (man && man.ok) {
@@ -557,6 +600,7 @@ function runLiveSearch(ra, dec, label, scroll = true) {
         const lf = $("#look-for"); if (lf) lf.textContent = state.target.look;
         setURLCoords();
         buildTimeline(); showFrame(0);
+        applyViewFov();
         renderBandChart(); renderSpectrum(); fillDetail();
         if (scroll) { const ex = $("#explorer"); if (ex) ex.scrollIntoView({ behavior: "smooth" }); }
         fetchLiveSpectrum(ra, dec);
@@ -585,7 +629,7 @@ function handleSearch(qRaw) {
   if (m) { runLiveSearch(parseFloat(m[1]), parseFloat(m[2])); return; }
   if (API) {
     $("#legend").textContent = `Resolving “${qRaw.trim()}” with the backend…`;
-    fetchJSON(`${API}/api/resolve?q=${encodeURIComponent(qRaw.trim())}`, 45000,
+    fetchJSON(`${API}/api/resolve?q=${encodeURIComponent(qRaw.trim())}`, 20000,
       `Resolving “${qRaw.trim()}”…`)
       .then((res) => {
         if (res && res.ra != null) runLiveSearch(res.ra, res.dec, res.name || qRaw.trim());
@@ -625,11 +669,16 @@ if (HAS_EXPLORER) {
   if (fovSel) fovSel.addEventListener("change", () => {
     state.fov = Number(fovSel.value);
     if (state.liveCoords) {
+      // A live-rendered field re-renders at the new field of view.
       runLiveSearch(state.liveCoords.ra, state.liveCoords.dec, state.target.name);
-    } else if (state.target && state.target.slug && API) {
-      runLiveSearch(state.target.ra, state.target.dec, state.target.name);
-    } else if (state.target && state.target.slug) {
-      $("#legend").textContent = `FoV choices render live on the backend; this target is pre-rendered at ${state.target.fov}′ in the static copy.`;
+    } else if (state.target && state.target.slug && state.manifest) {
+      // A pre-loaded target switches instantly on the client: the
+      // narrower view is the centre crop of its pre-rendered frame.
+      applyViewFov();
+      const native = state.manifest.fov_arcmin || state.target.fov;
+      $("#legend").textContent = state.viewFov < native
+        ? `FoV ${state.viewFov}′: centre crop of the pre-rendered ${native}′ frame. Same pixels, same scale, no backend needed.`
+        : `FoV ${state.viewFov}′: the full pre-rendered frame.`;
     }
   });
   const bandBtn = $("#btn-band");

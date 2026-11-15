@@ -62,7 +62,7 @@ main{max-width:1180px;margin:0 auto;padding:0 18px 40px}
 .mode-tabs button.active{color:#04241E;background:var(--teal);border-color:var(--teal);font-weight:600}
 
 .stage{margin-top:14px;background:#000;border-radius:12px;display:flex;justify-content:center;padding:10px}
-.frame-wrap{position:relative;width:min(520px,100%);aspect-ratio:1}
+.frame-wrap{position:relative;width:min(520px,100%);aspect-ratio:1;overflow:hidden}
 .frame-wrap img,.frame-wrap canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;
   image-rendering:pixelated;border-radius:6px}
 .hidden{display:none!important}
@@ -73,7 +73,7 @@ main{max-width:1180px;margin:0 auto;padding:0 18px 40px}
 .scalebar{position:absolute;left:10px;bottom:8px;color:#EAF0FF;font-size:11px;
   border-bottom:2px solid #EAF0FF;width:19.35%;padding-bottom:2px;opacity:.85}
 .side-pair{display:flex;gap:10px;width:100%}
-.side-pair figure{flex:1;margin:0}
+.side-pair figure{flex:1;margin:0;overflow:hidden}
 .side-pair img{width:100%;image-rendering:pixelated;border-radius:6px}
 .side-pair figcaption{color:var(--mist);font-size:11.5px;margin-top:5px;text-align:center}
 
