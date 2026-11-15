@@ -26,8 +26,12 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 from pipeline import build_frames  # noqa: E402
 
-LIVE_CACHE = os.path.join(ROOT, "data", "live-cache")
-os.makedirs(LIVE_CACHE, exist_ok=True)
+LIVE_CACHE = os.environ.get("SKYBLINK_CACHE_DIR") or os.path.join(ROOT, "data", "live-cache")
+try:
+    os.makedirs(LIVE_CACHE, exist_ok=True)
+except OSError:  # read-only host (e.g. Vercel): fall back to /tmp
+    LIVE_CACHE = "/tmp/skyblink-live-cache"
+    os.makedirs(LIVE_CACHE, exist_ok=True)
 
 app = FastAPI(title="SkyBlink API", version="0.1")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET"],
