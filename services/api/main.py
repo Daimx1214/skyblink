@@ -92,7 +92,10 @@ def frames(ra: float, dec: float, fov: float = 5.0, det: int = 2):
         with open(man_path) as f:
             man = json.load(f)
     else:
-        man = build_frames(ra, dec, fov, outdir, detector=det)
+        try:
+            man = build_frames(ra, dec, fov, outdir, detector=det)
+        except Exception as e:  # upstream archive (IRSA) outage etc.
+            raise HTTPException(502, f"archive query failed: {type(e).__name__}: {str(e)[:160]}")
         if not man.get("ok"):
             raise HTTPException(404, man.get("reason", "no frames"))
     for fr in man["frames"]:
