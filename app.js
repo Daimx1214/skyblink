@@ -351,16 +351,16 @@ function renderBandChart() {
   const fr = state.manifest.frames.filter((f) => f.band_flux != null);
   if (!fr.length) { el.innerHTML = ""; return; }
   const max = Math.max(...fr.map((f) => Math.abs(f.band_flux))) || 1;
-  const bw = 58, gap = 34, H = 168, base = H - 50;
+  const bw = 56, gap = 46, H = 176, base = H - 54;
   const width = fr.length * (bw + gap) + gap;
   const bars = fr.map((f, i) => {
     const h = Math.max(3, (Math.abs(f.band_flux) / max) * (base - 18));
     const x = gap + i * (bw + gap), y = base - h;
     return `<g>
       <rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="5" fill="var(--d${f.detector})"></rect>
-      <text x="${x + bw / 2}" y="${base + 16}" text-anchor="middle" class="bc-x">D${f.detector}</text>
-      <text x="${x + bw / 2}" y="${base + 31}" text-anchor="middle" class="bc-x2">${f.wave_um ? f.wave_um[0] + "–" + f.wave_um[1] + " µm" : ""}</text>
-      <text x="${x + bw / 2}" y="${base + 45}" text-anchor="middle" class="bc-x2">${f.date}</text>
+      <text x="${x + bw / 2}" y="${base + 17}" text-anchor="middle" class="bc-x">D${f.detector}</text>
+      <text x="${x + bw / 2}" y="${base + 34}" text-anchor="middle" class="bc-x2">${f.wave_um ? f.wave_um[0] + "–" + f.wave_um[1] + " µm" : ""}</text>
+      <text x="${x + bw / 2}" y="${base + 50}" text-anchor="middle" class="bc-x2">${f.date}</text>
     </g>`;
   }).join("");
   el.innerHTML = `<svg viewBox="0 0 ${width} ${H}" role="img" aria-label="Aperture flux per detector band">${bars}</svg>
