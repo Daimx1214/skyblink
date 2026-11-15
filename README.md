@@ -42,7 +42,7 @@ Six pages, one job: show how the sky changes.
 - **Shareable views** — every target lives at its own URL (`target.html?t=…`);
   live coordinate views carry their coordinates and field of view
   (`?ra&dec&fov`), and a Share link button copies the current view. The **FoV
-  control** re-renders a field live from the archive at 3–20 arcmin.
+  control** re-renders a field live from the archive at 3 or 5 arcmin.
 - **Staying current** — `scripts/update_check.py` diffs each target's cached
   epochs against the live archive; a weekly scheduled run rebuilds and
   re-publishes any target whose field has gained a new visit epoch.
