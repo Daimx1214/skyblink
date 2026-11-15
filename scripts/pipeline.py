@@ -51,7 +51,7 @@ def sia_query(ra, dec, fov_arcmin):
             break
         except Exception as e:  # IRSA/proxy flakiness: 502s happen
             last = e
-            print(f"  SIA retry {attempt + 1}/4: {str(e)[:100]}", flush=True)
+            print(f"  SIA retry {attempt + 1}/4: {type(e).__name__}: {str(e)[:300]}", flush=True)
             time.sleep(20 * (attempt + 1))
     else:
         raise last
