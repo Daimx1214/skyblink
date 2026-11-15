@@ -166,6 +166,7 @@ main{max-width:1180px;margin:0 auto;padding:0 18px 40px}
 .fact-grid dt{color:var(--mist)} .fact-grid dd{margin:0;text-align:right}
 .band-chart{margin-top:14px;overflow-x:auto}
 .band-chart svg{width:100%;max-width:520px;height:auto}
+#spectrum-chart svg{max-width:860px;height:auto}
 .bc-x{fill:var(--star);font-size:12.5px;font-family:"IBM Plex Mono",monospace}
 .bc-x2{fill:var(--mist);font-size:11.5px;font-family:"IBM Plex Mono",monospace}
 .data-table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px;
