@@ -55,4 +55,4 @@ targets:
     default_fov_arcmin: 5
     default_detectors: [1, 2, 3, 4, 5, 6]
     stretch: asinh
-    look_for: "A Mira variable (period ~246 days) near the north ecliptic pole - the most-visited target in this list, so its light curve has the most points. Watch for saturation flags at maximum light."
+    look_for: "A Mira variable (period ~246 days) near the north ecliptic pole. It swells and fades over its cycle, so the blink pulses instead of shifting. Watch for saturation flags at maximum light."
