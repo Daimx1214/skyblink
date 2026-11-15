@@ -85,7 +85,15 @@ Static site (targets + case files work with zero backend), from the repo root:
 python3 -m http.server 8000
 ```
 
-Live backend (any coordinates):
+Live backend (any coordinates) — deployed free on Vercel (Hobby) from this repo
+(`api/index.py` re-exports the FastAPI app; caches fall back to /tmp on the
+read-only host): **https://skyblink-lyart.vercel.app**
+(`GET /api/health` · `/api/resolve?q=Barnard's Star` · `/api/frames?ra=269.4464&dec=4.7671&fov=5`).
+The live site connects to it automatically (`window.SKYBLINK_API` in each page).
+Cold renders of a new field can take a while; the five targets and case files
+never depend on it.
+
+Run the backend locally:
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install astropy astroquery reproject photutils fastapi uvicorn pillow scipy

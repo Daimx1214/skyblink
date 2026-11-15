@@ -168,6 +168,7 @@ function buildTimeline() {
 
 /* ---------- display ---------- */
 function frameURL(f) {
+  if (API && f.png && f.png.startsWith("/api/")) return API + f.png;
   const bundled = (window.SKYBLINK_CACHE || {})[state.target.slug];
   if (bundled && bundled.frames[f.png]) return bundled.frames[f.png];
   return `cache/${state.target.slug}/${f.png}`;
