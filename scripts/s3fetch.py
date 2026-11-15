@@ -88,6 +88,26 @@ def _data_size(cards):
     return ((n + BLOCK - 1) // BLOCK) * BLOCK
 
 
+def cached_listing(tree, pointing):
+    """list_keys for one pointing, cached on disk (a pointing holds
+    ~11k keys; the listing takes ~25 s, so never pay it twice)."""
+    import json
+    path = os.path.join(CACHE, f"listing_{tree}_{pointing}.json")
+    if os.path.exists(path):
+        try:
+            with open(path) as f:
+                return json.load(f)
+        except Exception:  # noqa: BLE001
+            pass
+    keys = list_keys(f"{tree}/level2/{pointing}/")
+    try:
+        with open(path, "w") as f:
+            json.dump(keys, f)
+    except OSError:
+        pass
+    return keys
+
+
 def fetch_image_hdu(key, tag):
     """Fetch only the PRIMARY + IMAGE segments of an S3 FITS file.
     Returns a local mini-FITS path (cached)."""
