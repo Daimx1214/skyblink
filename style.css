@@ -100,6 +100,7 @@ main{max-width:1180px;margin:0 auto;padding:0 18px 40px}
 .tick-wrap.on .tick-date{color:var(--amber);font-weight:600}
 .fps{display:flex;gap:8px;align-items:center;color:var(--mist);font-size:12px}
 .fps input{accent-color:var(--teal)}
+.fps select{background:var(--panel);color:var(--star);border:1px solid var(--line);border-radius:8px;padding:3px 6px;font-size:12px}
 
 .inspector{display:flex;flex-direction:column;gap:18px}
 .insp-card h3{margin:0 0 8px;font-size:16px}
