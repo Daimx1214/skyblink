@@ -14,8 +14,9 @@ five targets named in the challenge (Barnard's Star, Epsilon Indi B, WISE
 0855, RW Aurigae, R Draconis) are pre-loaded with blink explorers, Gaia DR3
 and WISE overlays, per-frame quality data, and a spectrum assembled from
 individual exposures (14 to 74 wavelength channels per target). Pre-loaded
-targets open instantly; a live search for new fields is available and may
-take about a minute on first render. Guided Case Files track interstellar
+targets open instantly; a live search for new fields is available, and it
+stops with a clear message if the archive does not answer within about 20
+seconds. Guided Case Files track interstellar
 comet 3I/ATLAS across two visits and present a measured proper-motion check
 on Barnard's Star. The method was validated with 540 synthetic movers
 injected into real image pairs. No account is needed and nothing is
@@ -43,9 +44,9 @@ page and Case File 2).
 Data and releases. All imagery is SPHEREx Level-2 data from the IRSA
 archive: Data Release 1 and Quick Release 3, one uniformly processed set.
 The live backend (https://skyblink-lyart.vercel.app) resolves names
-through SIMBAD and Sesame and renders new fields on demand; a first render
-can take about a minute, and it depends on the IRSA archive service being
-up. The five pre-loaded targets below are served from a prepared cache and
+through SIMBAD and Sesame and renders new fields on demand; the search
+waits about 20 seconds for the archive to answer and then stops with a
+clear message. The five pre-loaded targets below are served from a prepared cache and
 open instantly.
 
 The five challenge targets. Barnard's Star, Epsilon Indi B, WISE 0855, RW
