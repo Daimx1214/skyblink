@@ -187,6 +187,36 @@ def to_png(arr, lo, hi, path):
     return path
 
 
+def _s3_stem(access_url):
+    for part in access_url.replace("?", "/").split("/"):
+        if part.startswith("level2_") and "_spx" in part:
+            return part[len("level2_"):].split("_spx")[0]
+    return None
+
+
+def fetch_frame_file(row, ra, dec, size_deg):
+    """Get a local FITS for one picked exposure. Prefer the public S3
+    bucket (HTTP-range mini-FITS: fast, and S3 does not throttle like the
+    IBE cutout service, whose 503 retry sleeps can push a multi-epoch
+    render past a serverless time limit). Fall back to the IBE cutout."""
+    stem = _s3_stem(str(row["access_url"]))
+    if stem:
+        try:
+            from s3fetch import cached_listing, fetch_image_hdu
+            coll = str(row["obs_collection"]).lower()
+            tree = "dr1" if "dr1" in coll else "qr3"
+            pointing = "_".join(stem.split("_")[:2])
+            key = next((k for k in cached_listing(tree, pointing)
+                        if f"level2_{stem}_" in k
+                        and k.endswith(".fits")), None)
+            if key:
+                return fetch_image_hdu(key, stem)
+        except Exception as e:  # noqa: BLE001
+            print(f"  S3 fetch failed ({str(e)[:80]}); IBE fallback",
+                  flush=True)
+    return fetch_cutout(cutout_url(str(row["access_url"]), ra, dec, size_deg))
+
+
 def build_frames(ra, dec, fov_arcmin, outdir, detector=2):
     """Full route: query -> epoch groups -> cutouts -> aligned PNGs + manifest."""
     os.makedirs(outdir, exist_ok=True)
@@ -201,8 +231,7 @@ def build_frames(ra, dec, fov_arcmin, outdir, detector=2):
         row = pick_row(g["rows"], detector)
         if row is None:
             continue
-        url = cutout_url(str(row["access_url"]), ra, dec, size_deg)
-        path = fetch_cutout(url)
+        path = fetch_frame_file(row, ra, dec, size_deg)
         arr, meta = render_frame(path, twcs, shape)
         pick = {**g, **meta, "center_dist_deg": float(row["dist_deg"])}
         if meta.get("date_obs"):
